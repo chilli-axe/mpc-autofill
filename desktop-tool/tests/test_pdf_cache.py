@@ -1,5 +1,6 @@
 import json
 import os
+from io import BytesIO
 from pathlib import Path
 from xml.sax.saxutils import escape
 
@@ -33,6 +34,27 @@ def make_order(image_path: Path) -> CardOrder:
 
 
 @pytest.fixture
+def fake_pdfx(monkeypatch):
+    conversions = []
+
+    def convert(source, destination, config):
+        conversions.append(destination)
+        Path(destination).write_bytes(Path(source).read_bytes())
+        return True
+
+    monkeypatch.setattr(pdf_maker, "convert_pdf_to_pdfx", convert)
+    monkeypatch.setattr(autofill, "get_ghostscript_path", lambda *_: "test-gs")
+    monkeypatch.setattr(autofill, "get_ghostscript_version", lambda _: "test version")
+    return conversions
+
+
+def rewrite_keeping_mtime(path, data):
+    before = path.stat()
+    path.write_bytes(data)
+    os.utime(path, ns=(before.st_atime_ns, before.st_mtime_ns))
+
+
+@pytest.fixture
 def cached_export(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     image_path = tmp_path / "original.png"
@@ -63,8 +85,7 @@ def test_same_mtime_content_changes_invalidate_cache(cached_export, changed_file
     path = {"image": image_path, "icc": icc_path, "pdf": output}[changed_file]
     before = path.stat()
     contents = path.read_bytes()
-    path.write_bytes(bytes([contents[0] ^ 1]) + contents[1:])
-    os.utime(path, ns=(before.st_atime_ns, before.st_mtime_ns))
+    rewrite_keeping_mtime(path, bytes([contents[0] ^ 1]) + contents[1:])
     assert path.stat().st_size == before.st_size
     assert path.stat().st_mtime_ns == before.st_mtime_ns
     assert reuse_pdf_export(make_order(image_path), "DTC 300 DPI", [str(icc_path)]) is None
@@ -126,7 +147,7 @@ def test_manifest_cannot_reuse_existing_pdf_outside_export_directory(cached_expo
 
 
 @pytest.mark.parametrize("site", ["DriveThruCards", "MakePlayingCards"])
-def test_cli_reuses_unchanged_xml_by_default_and_can_force_rebuild(cached_export, monkeypatch, site):
+def test_cli_reuses_unchanged_xml_by_default_and_can_force_rebuild(cached_export, monkeypatch, site, fake_pdfx):
     image_path, icc_path, _ = cached_export
     card = f"<card><id>{escape(str(image_path))}</id><slots>0,1</slots><name>{image_path.name}</name></card>"
     Path("deck.xml").write_text(
@@ -134,22 +155,14 @@ def test_cli_reuses_unchanged_xml_by_default_and_can_force_rebuild(cached_export
         f"<fronts>{card}</fronts><backs>{card}</backs><cardback></cardback></order>",
         encoding="utf-8",
     )
-    conversions, layouts = [], []
-
-    def convert(source, destination, config):
-        conversions.append(destination)
-        Path(destination).write_bytes(Path(source).read_bytes())
-        return True
+    layouts = []
 
     def select_layout(_):
         layouts.append(True)
         return {"split_faces": False, "cards_per_file": 60}
 
-    monkeypatch.setattr(pdf_maker, "convert_pdf_to_pdfx", convert)
     monkeypatch.setattr(pdf_maker.InquirerPy, "prompt", select_layout)
     monkeypatch.setattr(autofill, "ensure_ghostscript_available", lambda: "test-gs")
-    monkeypatch.setattr(autofill, "get_ghostscript_path", lambda *_: "test-gs")
-    monkeypatch.setattr(autofill, "get_ghostscript_version", lambda _: "test version")
     monkeypatch.setattr("src.logging.configure_loggers", lambda **_: None)
     command = [
         "--directory",
@@ -177,37 +190,27 @@ def test_cli_reuses_unchanged_xml_by_default_and_can_force_rebuild(cached_export
         run("--skip-pdf-if-exists")
     assert [(path.read_bytes(), path.stat().st_mtime_ns) for path in outputs] == original
     run("--no-skip-pdf-if-exists")
-    assert len(conversions if site == "DriveThruCards" else layouts) == 2
+    assert len(fake_pdfx if site == "DriveThruCards" else layouts) == 2
 
 
-def test_dtc_export_reuses_fresh_order_and_rebuilds_same_mtime_image(cached_export, monkeypatch):
+def test_dtc_export_reuses_fresh_order_and_rebuilds_same_mtime_image(cached_export, monkeypatch, fake_pdfx):
     image_path, icc_path, _ = cached_export
-    conversions = []
-
-    def convert(source, destination, config):
-        conversions.append(destination)
-        Path(destination).write_bytes(Path(source).read_bytes())
-        return True
-
-    monkeypatch.setattr(pdf_maker, "convert_pdf_to_pdfx", convert)
-    monkeypatch.setattr(autofill, "get_ghostscript_path", lambda *_: "test-gs")
-    monkeypatch.setattr(autofill, "get_ghostscript_version", lambda _: "test version")
 
     def export():
         return autofill.get_dtc_pdf_paths_for_order(make_order(image_path), True, str(icc_path), "LANCZOS")
 
     original = Path(export())
-    assert len(conversions) == 1
+    assert len(fake_pdfx) == 1
     assert original.read_bytes().startswith(b"%PDF")
     with monkeypatch.context() as context:
         context.setattr(pdf_maker, "PdfExporter", lambda **_: pytest.fail("unchanged export instantiated PdfExporter"))
         assert Path(export()) == original
 
-    before = image_path.stat()
-    Image.new("RGB", (20, 30), "blue").save(image_path)
-    os.utime(image_path, ns=(before.st_atime_ns, before.st_mtime_ns))
+    data = BytesIO()
+    Image.new("RGB", (20, 30), "blue").save(data, format="PNG")
+    rewrite_keeping_mtime(image_path, data.getvalue())
     export()
-    assert len(conversions) == 2
+    assert len(fake_pdfx) == 2
 
 
 def test_standard_export_reuses_prior_layout_without_prompt(cached_export, monkeypatch):
@@ -234,16 +237,9 @@ def test_standard_export_reuses_prior_layout_without_prompt(cached_export, monke
     assert len(questions) == 2
 
 
-def test_dtc_cache_accepts_same_config_object_on_second_export(cached_export, monkeypatch):
+def test_dtc_cache_accepts_same_config_object_on_second_export(cached_export, monkeypatch, fake_pdfx):
     image_path, icc_path, _ = cached_export
 
-    def convert(source, destination, config):
-        Path(destination).write_bytes(Path(source).read_bytes())
-        return True
-
-    monkeypatch.setattr(pdf_maker, "convert_pdf_to_pdfx", convert)
-    monkeypatch.setattr(autofill, "get_ghostscript_path", lambda *_: "test-gs")
-    monkeypatch.setattr(autofill, "get_ghostscript_version", lambda _: "test version")
     post_config = ImagePostProcessingConfig(max_dpi=300, downscale_alg=ImageResizeMethods.LANCZOS, output_format="JPEG")
     pdfx_config = PdfXConversionConfig(icc_profile_path=str(icc_path))
     original = autofill.export_pdf_order(make_order(image_path), True, post_config, pdfx_config)
@@ -253,31 +249,21 @@ def test_dtc_cache_accepts_same_config_object_on_second_export(cached_export, mo
     ] == [Path(path) for path in original]
 
 
-def test_failed_dtc_conversion_does_not_save_reuse_metadata(cached_export, monkeypatch):
+def test_failed_dtc_conversion_does_not_save_reuse_metadata(cached_export, monkeypatch, fake_pdfx):
     image_path, icc_path, output = cached_export
     manifest_path = output.parent / "manifest.json"
     previous_manifest = manifest_path.read_bytes()
     monkeypatch.setattr(pdf_maker, "convert_pdf_to_pdfx", lambda *_: False)
-    monkeypatch.setattr(autofill, "get_ghostscript_path", lambda *_: "test-gs")
-    monkeypatch.setattr(autofill, "get_ghostscript_version", lambda _: "test version")
     with pytest.raises(ValueError, match="exactly one PDF/X"):
         autofill.get_dtc_pdf_paths_for_order(make_order(image_path), True, str(icc_path), "LANCZOS")
     assert manifest_path.read_bytes() == previous_manifest
 
 
 @pytest.mark.parametrize("changed", ["max_dpi", "downscale_alg", "jpeg_quality", "icc", "ghostscript_version"])
-def test_dtc_cache_uses_effective_export_options(cached_export, monkeypatch, changed):
+def test_dtc_cache_uses_effective_export_options(cached_export, monkeypatch, changed, fake_pdfx):
     image_path, icc_path, _ = cached_export
-    conversions = []
     gs_version = "first version"
 
-    def convert(source, destination, config):
-        conversions.append(destination)
-        Path(destination).write_bytes(Path(source).read_bytes())
-        return True
-
-    monkeypatch.setattr(pdf_maker, "convert_pdf_to_pdfx", convert)
-    monkeypatch.setattr(autofill, "get_ghostscript_path", lambda *_: "test-gs")
     monkeypatch.setattr(autofill, "get_ghostscript_version", lambda _: gs_version)
     options = {"max_dpi": 100, "downscale_alg": ImageResizeMethods.LANCZOS, "output_format": "JPEG"}
 
@@ -291,33 +277,29 @@ def test_dtc_cache_uses_effective_export_options(cached_export, monkeypatch, cha
 
     export()
     if changed == "icc":
-        before = icc_path.stat()
-        icc_path.write_bytes(b"modified ICC profile")
-        os.utime(icc_path, ns=(before.st_atime_ns, before.st_mtime_ns))
+        rewrite_keeping_mtime(icc_path, b"modified ICC profile")
     elif changed == "ghostscript_version":
         gs_version = "second version"
     else:
         options[changed] = {"max_dpi": 150, "downscale_alg": ImageResizeMethods.NEAREST, "jpeg_quality": 75}[changed]
     export()
-    assert len(conversions) == 2
+    assert len(fake_pdfx) == 2
 
 
-def test_image_changed_during_conversion_is_not_cached_as_rendered(cached_export, monkeypatch):
+def test_image_changed_during_conversion_is_not_cached_as_rendered(cached_export, monkeypatch, fake_pdfx):
     image_path, icc_path, _ = cached_export
-    conversions = []
 
-    def convert(source, destination, config):
-        conversions.append(destination)
-        Path(destination).write_bytes(Path(source).read_bytes())
-        if len(conversions) == 1:
-            before = image_path.stat()
-            Image.new("RGB", (20, 30), "blue").save(image_path)
-            os.utime(image_path, ns=(before.st_atime_ns, before.st_mtime_ns))
-        return True
+    convert = pdf_maker.convert_pdf_to_pdfx
 
-    monkeypatch.setattr(pdf_maker, "convert_pdf_to_pdfx", convert)
-    monkeypatch.setattr(autofill, "get_ghostscript_path", lambda *_: "test-gs")
-    monkeypatch.setattr(autofill, "get_ghostscript_version", lambda _: "test version")
+    def edit_image_during_conversion(source, destination, config):
+        result = convert(source, destination, config)
+        if len(fake_pdfx) == 1:
+            data = BytesIO()
+            Image.new("RGB", (20, 30), "blue").save(data, format="PNG")
+            rewrite_keeping_mtime(image_path, data.getvalue())
+        return result
+
+    monkeypatch.setattr(pdf_maker, "convert_pdf_to_pdfx", edit_image_during_conversion)
 
     def export():
         return autofill.get_dtc_pdf_paths_for_order(make_order(image_path), True, str(icc_path), "LANCZOS")
@@ -325,7 +307,7 @@ def test_image_changed_during_conversion_is_not_cached_as_rendered(cached_export
     export()
     export()
     assert (
-        len(conversions) == 2
+        len(fake_pdfx) == 2
     ), "PDF rendered before an image edit must not be cached with the edited image's fingerprint"
     export()
-    assert len(conversions) == 2
+    assert len(fake_pdfx) == 2
