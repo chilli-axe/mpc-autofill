@@ -1,3 +1,4 @@
+import logging
 import time
 from types import SimpleNamespace
 
@@ -168,6 +169,7 @@ def test_log_dtc_page_state_reports_load_and_blocking_without_url_query(
     monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver
 ) -> None:
     messages = []
+    monkeypatch.setattr("src.driver.logger.handlers", [logging.NullHandler(logging.DEBUG)])
     dtc_driver.driver = SimpleNamespace(
         current_url="https://example.com/setup?account_token=secret",
         title="Publisher setup",
@@ -186,6 +188,25 @@ def test_log_dtc_page_state_reports_load_and_blocking_without_url_query(
         "ready_state=complete, browser_errors=1, blocked_by_client=1"
     ]
     assert "secret" not in messages[0]
+
+
+def test_log_dtc_page_state_skips_browser_without_debug_handler(monkeypatch, dtc_driver):
+    class UnusedBrowser:
+        def __getattr__(self, name):
+            pytest.fail(f"Unexpected browser access: {name}")
+
+    monkeypatch.setattr("src.driver.logger.handlers", [logging.NullHandler(logging.INFO)])
+    dtc_driver.driver = UnusedBrowser()
+
+    dtc_driver._log_dtc_page_state("before setup")
+
+
+def test_run_dtc_step_logs_only_before_success(dtc_driver):
+    page_states = []
+    dtc_driver._log_dtc_page_state = page_states.append
+
+    assert dtc_driver._run_dtc_step("setup", lambda: "ready") == "ready"
+    assert page_states == ["before setup"]
 
 
 def test_initialise_driver_retries_when_initial_window_is_already_closed(
@@ -561,7 +582,9 @@ def test_initialise_bars_creates_only_status_bar_for_dtc(monkeypatch: pytest.Mon
 
 
 @pytest.mark.parametrize("unavailable_property", ["current_url", "title"])
-def test_step_preserves_original_failure_when_browser_diagnostics_fail(dtc_driver, unavailable_property):
+def test_step_preserves_original_failure_when_browser_diagnostics_fail(monkeypatch, dtc_driver, unavailable_property):
+    monkeypatch.setattr("src.driver.logger.handlers", [logging.NullHandler(logging.DEBUG)])
+
     class ClosedBrowser:
         def __getattr__(self, name):
             if name == unavailable_property:

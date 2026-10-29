@@ -1,4 +1,5 @@
 import datetime as dt
+import logging
 import os
 import re
 import textwrap
@@ -950,6 +951,8 @@ class AutofillDriver:
             )
 
     def _log_dtc_page_state(self, context: str) -> None:
+        if not any(handler.level <= logging.DEBUG for handler in logger.handlers):
+            return
         try:
             current_url = str(getattr(self.driver, "current_url", "unavailable"))
             parsed_url = urlsplit(current_url)
@@ -979,12 +982,10 @@ class AutofillDriver:
     def _run_dtc_step(self, step_name: str, func: Any, *args: Any, **kwargs: Any) -> Any:
         self._log_dtc_page_state(f"before {step_name}")
         try:
-            result = func(*args, **kwargs)
+            return func(*args, **kwargs)
         except Exception as exc:
             self._log_dtc_page_state(f"failed {step_name}")
             raise Exception(f"DriveThruCards step '{step_name}' failed: {exc}") from exc
-        self._log_dtc_page_state(f"after {step_name}")
-        return result
 
     def prepare_drive_thru_cards_session(self) -> None:
         self.set_state(States.defining_order, "Opening DriveThruCards")
