@@ -853,7 +853,8 @@ class AutofillDriver:
         select.select_by_visible_text(euro_poker_option_text)
         logger.debug(f"Selected '{euro_poker_option_text}' from dropdown.")
 
-        pdf_path = os.path.abspath(pdf_path)
+        if not os.path.isabs(pdf_path):
+            pdf_path = os.path.abspath(pdf_path)
 
         if not os.path.exists(pdf_path):
             raise Exception(f"PDF file not found: {pdf_path}")

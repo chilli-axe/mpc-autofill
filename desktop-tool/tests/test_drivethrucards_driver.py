@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 from types import SimpleNamespace
 
@@ -549,8 +550,10 @@ def test_select_card_type_and_upload_pdf_raises_when_euro_poker_option_is_missin
         dtc_driver.select_card_type_and_upload_pdf(pdf_path="/tmp/order.pdf")
 
 
+@pytest.mark.parametrize("absolute", [False, True])
+@pytest.mark.parametrize("filename", ["does-not-exist.pdf", "link/../does-not-exist.pdf"])
 def test_select_card_type_and_upload_pdf_raises_when_pdf_is_missing(
-    monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver, tmp_path
+    monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver, tmp_path, filename, absolute
 ) -> None:
     euro_poker_select = SimpleNamespace(
         options=[SimpleNamespace(text="Premium Euro Poker Card(s)")],
@@ -562,8 +565,11 @@ def test_select_card_type_and_upload_pdf_raises_when_pdf_is_missing(
     )
     monkeypatch.setattr("src.driver.Select", lambda _element: euro_poker_select)
 
-    with pytest.raises(Exception, match="PDF file not found"):
-        dtc_driver.select_card_type_and_upload_pdf(pdf_path=str(tmp_path / "does-not-exist.pdf"))
+    pdf_path = str(tmp_path / filename) if absolute else filename
+    with pytest.raises(Exception, match="PDF file not found") as error:
+        dtc_driver.select_card_type_and_upload_pdf(pdf_path=pdf_path)
+    expected_path = pdf_path if absolute else os.path.abspath(pdf_path)
+    assert str(error.value) == f"PDF file not found: {expected_path}"
 
 
 def test_initialise_bars_creates_only_status_bar_for_dtc(monkeypatch: pytest.MonkeyPatch) -> None:
