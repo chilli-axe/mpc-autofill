@@ -197,3 +197,21 @@ def test_actual_dtc_browser_factory_with_temporary_profile(upload_page, tmp_path
         assert driver.execute_script("return document.readyState") == "complete"
     finally:
         driver.quit()
+
+
+@pytest.mark.parametrize(
+    ("html", "authenticated", "publisher_ready"),
+    [
+        ("<button data-cy='accountMenu' hidden>Account</button><a href='pub_tools.php' hidden>Tools</a>", False, False),
+        ("<button data-cy='accountMenu'>Account</button>", True, False),
+        ("<button>Log Off</button>", True, False),
+        ("<a href='pub_tools.php'>Tools</a>", True, True),
+        ("<button>Publisher Tools</button>", False, True),
+    ],
+)
+def test_account_and_publisher_visibility(browser, monkeypatch, html, authenticated, publisher_ready):
+    monkeypatch.setattr(AutofillDriver, "__attrs_post_init__", lambda self: None)
+    driver = AutofillDriver(target_site=TargetSites.DriveThruCards, driver=browser)
+    browser.get("data:text/html," + html)
+    assert driver.is_dtc_user_authenticated() is authenticated
+    assert driver.is_dtc_publisher_ready() is publisher_ready

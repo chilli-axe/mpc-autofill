@@ -518,22 +518,26 @@ class AutofillDriver:
         # Timeout reached
         raise TimeoutError(f"DriveThruCards did not finish loading after {timeout_seconds} seconds.")
 
+    def _any_displayed(self, *locators: tuple[str, str]) -> bool:
+        with self.no_implicit_wait():
+            return any(
+                element.is_displayed()
+                for by, selector in locators
+                for element in self.driver.find_elements(by, selector)
+            )
+
     def is_dtc_publisher_ready(self) -> bool:
         """Return whether the publisher-only Publish navigation link is visible."""
         selectors = self.target_site.value.selectors
         try:
-            with self.no_implicit_wait():
-                publisher_links = self.driver.find_elements(
+            return self._any_displayed(
+                (By.CSS_SELECTOR, selectors.publisher_ready_selector),
+                (
                     By.XPATH,
                     "//*[self::a or self::button]"
                     "[normalize-space()='Publish' or normalize-space()='Publisher Tools']",
-                )
-                return any(
-                    element.is_displayed()
-                    for element in (
-                        self.driver.find_elements(By.CSS_SELECTOR, selectors.publisher_ready_selector) + publisher_links
-                    )
-                )
+                ),
+            )
         except Exception as exc:
             logger.debug(f"Error checking publisher status: {exc}")
             return False
@@ -542,26 +546,14 @@ class AutofillDriver:
         """Check for a basic signed-in account independently of publisher access."""
         selectors = self.target_site.value.selectors
         try:
-            with self.no_implicit_wait():
-                authenticated_elements = self.driver.find_elements(
-                    By.CSS_SELECTOR, selectors.authenticated_indicator_selector
-                )
-                if any(element.is_displayed() for element in authenticated_elements):
-                    return True
-
-                logout_elements = self.driver.find_elements(
+            return self._any_displayed(
+                (By.CSS_SELECTOR, selectors.authenticated_indicator_selector),
+                (
                     By.XPATH,
                     "//*[self::a or self::button][normalize-space()='Log Off' or normalize-space()='Log Out']",
-                )
-                if any(element.is_displayed() for element in logout_elements):
-                    return True
-
-                # The Publish link also proves the user is signed in, even if the
-                # newer account-navigation selectors change.
-                return any(
-                    element.is_displayed()
-                    for element in self.driver.find_elements(By.CSS_SELECTOR, selectors.publisher_ready_selector)
-                )
+                ),
+                (By.CSS_SELECTOR, selectors.publisher_ready_selector),
+            )
         except Exception as exc:
             logger.debug(f"Error checking auth status: {exc}")
             return False
@@ -932,11 +924,7 @@ class AutofillDriver:
         self.driver.get(cast(str, buy_now_link.get_attribute("href")))
         logger.debug("Navigated to 'buy now' page to start placing the order.")
 
-        with self.no_implicit_wait():
-            login_buttons = self.driver.find_elements(
-                By.CSS_SELECTOR, self.target_site.value.selectors.login_button_selector
-            )
-            login_visible = any(button.is_displayed() for button in login_buttons)
+        login_visible = self._any_displayed((By.CSS_SELECTOR, self.target_site.value.selectors.login_button_selector))
         if login_visible and not self.is_dtc_user_authenticated():
             raise Exception(
                 "DriveThruCards requires sign-in before the cart handoff. "

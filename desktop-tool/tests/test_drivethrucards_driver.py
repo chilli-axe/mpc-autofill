@@ -603,3 +603,15 @@ def test_step_preserves_original_failure_when_browser_diagnostics_fail(monkeypat
     with pytest.raises(Exception, match="step 'upload' failed: original upload failure") as error:
         dtc_driver._run_dtc_step("upload", upload)
     assert error.value.__cause__ is original
+
+
+@pytest.mark.parametrize("method", ["is_dtc_user_authenticated", "is_dtc_publisher_ready"])
+def test_account_visibility_errors_restore_wait_and_return_false(dtc_driver, method):
+    waits = []
+
+    def fail(*_args):
+        raise sl_exc.NoSuchWindowException("window closed")
+
+    dtc_driver.driver = SimpleNamespace(find_elements=fail, implicitly_wait=waits.append)
+    assert getattr(dtc_driver, method)() is False
+    assert waits[-1] == 5
