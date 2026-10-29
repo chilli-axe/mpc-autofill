@@ -190,3 +190,20 @@ def test_dtc_preprocessing_failure_clears_cache_and_stops_manager(monkeypatch, t
     assert error.value.filename == str(missing_path)
     assert exporter.processed_images == {}
     assert stop_calls == [True]
+
+
+def test_dtc_exporter_enforces_geometry_with_explicit_overrides(monkeypatch):
+    monkeypatch.setattr(PdfExporter, "configure_bars", lambda self: None)
+    monkeypatch.setattr(PdfExporter, "generate_file_path", lambda self: None)
+    exporter = PdfExporter(
+        order=CardOrder(fronts=CardImageCollection()),
+        export_mode="drive_thru_cards",
+        card_width_in_inches=4,
+        card_height_in_inches=5,
+        separate_faces=True,
+    )
+    try:
+        assert (exporter.card_width_in_inches, exporter.card_height_in_inches) == (2.73, 3.71)
+        assert exporter.separate_faces is False
+    finally:
+        exporter.manager.stop()
