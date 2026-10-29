@@ -615,15 +615,15 @@ class AutofillDriver:
         if self.dtc_publisher_name:
             return
         try:
-            email_inputs = self.driver.find_elements(
-                By.CSS_SELECTOR,
-                "input[type='email'], input[name='email'], input[name='email_address']",
-            )
+            with self.no_implicit_wait():
+                email_inputs = self.driver.find_elements(
+                    By.CSS_SELECTOR,
+                    "input[type='email'], input[name='email'], input[name='email_address']",
+                )
             for email_input in email_inputs:
                 local_part, separator, _domain = (email_input.get_attribute("value") or "").strip().partition("@")
-                publisher_name = local_part
-                if separator and publisher_name:
-                    self.dtc_publisher_name = publisher_name
+                if separator and local_part:
+                    self.dtc_publisher_name = local_part
                     return
         except Exception:
             pass
@@ -657,16 +657,21 @@ class AutofillDriver:
 
         # Wait for user to complete login (timeout after 5 minutes)
         timeout_seconds = 300
-        start_time = time.time()
-        while time.time() - start_time < timeout_seconds:
-            self._capture_dtc_publisher_name()
-            time.sleep(1)
-            if self.is_dtc_user_authenticated():
-                logger.info("Successfully logged in to DriveThruCards!")
-                return True
 
-        logger.warning(f"Login timeout after {timeout_seconds}s. " "Please ensure you're logged in before continuing.")
-        return False
+        def capture_name_and_check_authentication(_driver: WebDriver) -> bool:
+            self._capture_dtc_publisher_name()
+            return self.is_dtc_user_authenticated()
+
+        try:
+            WebDriverWait(self.driver, timeout_seconds, poll_frequency=0.5).until(capture_name_and_check_authentication)
+        except sl_exc.TimeoutException:
+            logger.warning(
+                f"Login timeout after {timeout_seconds}s. " "Please ensure you're logged in before continuing."
+            )
+            return False
+
+        logger.info("Successfully logged in to DriveThruCards!")
+        return True
 
     def open_dtc_starting_page(self) -> None:
         """Wait for the local instruction-page button, or open DriveThruCards directly."""

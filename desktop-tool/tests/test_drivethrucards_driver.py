@@ -73,11 +73,13 @@ def test_authenticate_dtc_returns_immediately_when_already_logged_in(dtc_driver:
 
 def test_capture_dtc_publisher_name_preserves_email_local_part(dtc_driver: AutofillDriver) -> None:
     email_input = SimpleNamespace(get_attribute=lambda name: "bradley.smith-42@example.com")
-    dtc_driver.driver = SimpleNamespace(find_elements=lambda by, selector: [email_input])
+    waits = []
+    dtc_driver.driver = SimpleNamespace(find_elements=lambda by, selector: [email_input], implicitly_wait=waits.append)
 
     dtc_driver._capture_dtc_publisher_name()
 
     assert dtc_driver.dtc_publisher_name == "bradley.smith-42"
+    assert waits == [0, 5]
 
 
 def test_authenticated_selector_matches_current_account_menu() -> None:
@@ -108,6 +110,10 @@ def test_publisher_ready_accepts_visible_publish_navigation(dtc_driver: Autofill
 def test_authenticate_dtc_opens_login_pane_then_waits(
     monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver
 ) -> None:
+    email_input = SimpleNamespace(get_attribute=lambda name: "bradley.smith-42@example.com")
+    dtc_driver.driver = SimpleNamespace(
+        find_elements=lambda by, selector: [email_input], implicitly_wait=lambda _seconds: None
+    )
     auth_checks = iter([False, False, True])
     dtc_driver.is_dtc_user_authenticated = lambda: next(auth_checks)
     dtc_driver._click_dtc_login_button = lambda: True
@@ -118,6 +124,7 @@ def test_authenticate_dtc_opens_login_pane_then_waits(
     monkeypatch.setattr(time, "sleep", lambda _seconds: None)
 
     assert dtc_driver.authenticate_dtc() is True
+    assert dtc_driver.dtc_publisher_name == "bradley.smith-42"
     assert polling_calls[0][0] == By.XPATH
     assert "Go to Log In" in polling_calls[0][1]
     assert polling_calls[0][2] == 15
@@ -128,9 +135,9 @@ def test_authenticate_dtc_returns_false_on_timeout(monkeypatch: pytest.MonkeyPat
     dtc_driver._click_dtc_login_button = lambda: False
     dtc_driver.click_element_polling = lambda *_args, **_kwargs: False
 
+    dtc_driver.driver = SimpleNamespace(find_elements=lambda *_args: [], implicitly_wait=lambda _seconds: None)
     time_values = iter([0.0, 301.0])
-    monkeypatch.setattr(time, "time", lambda: next(time_values))
-    monkeypatch.setattr(time, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(time, "monotonic", lambda: next(time_values))
 
     assert dtc_driver.authenticate_dtc() is False
 
