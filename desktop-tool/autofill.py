@@ -29,7 +29,7 @@ import shutil
 import subprocess
 import sys
 from collections.abc import Callable
-from contextlib import nullcontext
+from contextlib import nullcontext, suppress
 from copy import copy
 from typing import TYPE_CHECKING, Optional
 from uuid import uuid4
@@ -93,10 +93,13 @@ def prune_stale_onefile_caches(extraction_directory: str) -> None:
 
 configure_tls()
 if "__compiled__" in globals():
+    _extraction_directory = os.path.dirname(os.path.abspath(__file__))
     if sys.platform != "win32":
-        _onefile_cache_lock = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".in-use"), "a")
-        fcntl.flock(_onefile_cache_lock, fcntl.LOCK_SH)
-    prune_stale_onefile_caches(os.path.dirname(os.path.abspath(__file__)))
+        # Held for the process lifetime so other builds' pruning skips this extraction.
+        with suppress(OSError):
+            _onefile_cache_lock = open(os.path.join(_extraction_directory, ".in-use"), "a")
+            fcntl.flock(_onefile_cache_lock, fcntl.LOCK_SH)
+    prune_stale_onefile_caches(_extraction_directory)
 
 # https://stackoverflow.com/questions/12492810/python-how-can-i-make-the-ansi-escape-codes-to-work-also-in-windows
 if sys.platform == "win32":
