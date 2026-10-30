@@ -348,18 +348,59 @@ def test_get_undetected_chrome_driver_applies_user_profile_options(monkeypatch: 
     assert captured["version_main"] == 120
 
 
-def test_detect_chrome_version_uses_selected_brave_browser(monkeypatch: pytest.MonkeyPatch) -> None:
-    captured = {}
+@pytest.mark.parametrize(
+    ("binary", "file_version", "expected", "registry_key"),
+    [
+        (r"C:\Custom Chromium\chrome.exe", 157, 157, None),
+        (r"C:\Custom Chromium\chrome.exe", None, 150, r"HKEY_CURRENT_USER\Software\Google\Chrome\BLBeacon"),
+        (
+            r"C:\Program Files\BraveSoftware\brave.exe",
+            157,
+            150,
+            r"HKEY_CURRENT_USER\Software\BraveSoftware\Brave-Browser\BLBeacon",
+        ),
+        (None, 157, 150, r"HKEY_CURRENT_USER\Software\Google\Chrome\BLBeacon"),
+    ],
+)
+def test_detect_chrome_version_uses_windows_file_version_before_registry(
+    monkeypatch, binary, file_version, expected, registry_key
+):
+    file_calls = []
+    registry_calls = []
+
+    def get_file_version(path):
+        file_calls.append(path)
+        return file_version
 
     def fake_run(args, **kwargs):
-        captured["args"] = args
+        registry_calls.append(args)
         return SimpleNamespace(stdout="version REG_SZ 150.1.92.143")
 
     monkeypatch.setattr(webdrivers.sys, "platform", "win32")
+    monkeypatch.setattr(webdrivers, "_get_windows_file_version", get_file_version)
     monkeypatch.setattr(webdrivers.subprocess, "run", fake_run)
 
-    assert webdrivers._detect_chrome_version(r"C:\Program Files\BraveSoftware\brave.exe") == 150
-    assert r"BraveSoftware\Brave-Browser\BLBeacon" in captured["args"][2]
+    assert webdrivers._detect_chrome_version(binary) == expected
+    assert file_calls == ([binary] if binary and "brave" not in binary.lower() else [])
+    assert registry_calls == ([["reg", "query", registry_key, "/v", "version"]] if registry_key else [])
+
+
+@pytest.mark.skipif(
+    sys.platform != "win32" or not os.environ.get("CHROME_BINARY"), reason="Windows Chrome binary required"
+)
+def test_detect_chrome_version_matches_windows_executable_resource(monkeypatch):
+    binary = os.environ["CHROME_BINARY"]
+    quoted_binary = binary.replace("'", "''")
+    result = subprocess.run(
+        ["powershell", "-NoProfile", "-Command", f"(Get-Item -LiteralPath '{quoted_binary}').VersionInfo.FileVersion"],
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=30,
+    )
+    expected = int(result.stdout.strip().split(".")[0])
+    monkeypatch.setattr(webdrivers.subprocess, "run", lambda *_, **__: pytest.fail("Should not query the registry"))
+    assert webdrivers._detect_chrome_version(binary) == expected
 
 
 @pytest.mark.parametrize(

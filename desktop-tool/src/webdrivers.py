@@ -97,6 +97,31 @@ def get_default_brave_binary_location() -> str:
     return default_binary_locations[sys.platform]
 
 
+def _get_windows_file_version(binary_location: str) -> Optional[int]:
+    if sys.platform == "win32":
+        import ctypes
+
+        try:
+            version = ctypes.windll.version
+            size = version.GetFileVersionInfoSizeW(binary_location, None)
+            if not size:
+                return None
+            buffer = ctypes.create_string_buffer(size)
+            info = ctypes.POINTER(ctypes.c_uint32)()
+            length = ctypes.c_uint()
+            if not version.GetFileVersionInfoW(binary_location, 0, size, buffer):
+                return None
+            if (
+                version.VerQueryValueW(buffer, "\\", ctypes.byref(info), ctypes.byref(length))
+                and info
+                and length.value >= 12
+            ):
+                return info[2] >> 16 or None
+        except OSError:
+            pass
+    return None
+
+
 def _detect_chrome_version(binary_location: Optional[str] = None) -> Optional[int]:
     """
     Detect the selected Chromium browser version.
@@ -106,6 +131,10 @@ def _detect_chrome_version(binary_location: Optional[str] = None) -> Optional[in
         if sys.platform == "darwin":
             cmd = [binary_location or "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "--version"]
         elif sys.platform == "win32":
+            if binary_location and "brave" not in binary_location.lower():
+                file_version = _get_windows_file_version(binary_location)
+                if file_version is not None:
+                    return file_version
             registry_key = (
                 r"HKEY_CURRENT_USER\Software\BraveSoftware\Brave-Browser\BLBeacon"
                 if binary_location and "brave" in binary_location.lower()
