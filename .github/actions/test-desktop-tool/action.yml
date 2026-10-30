@@ -2,40 +2,68 @@ name: Desktop tool tests
 description: Test the MPC Autofill CLI / desktop tool
 inputs:
   google-drive-api-key:
-    description: Your Google Drive API key, required for running the database crawler
-    required: true
+    description: Google service-account JSON. When empty, tests requiring it skip themselves.
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
     # not sure atm how to set up brave browser on github actions
-    - uses: browser-actions/setup-chrome@latest
+    - uses: browser-actions/setup-chrome@48ad923757ca74d66703209fe939badbdf80f2f4 # v2.2.0
+      id: chrome
       with:
-        chrome-version: stable
+        # Explicit versions preserve the macOS .app bundle: browser-actions/setup-chrome#658.
+        chrome-version: "156.0.8078.47"
+        install-chromedriver: true
     # - uses: browser-actions/setup-edge@latest
     #   with:
     #     edge-version: beta
-    - name: Fix macOS Chromedriver
-      if: runner.os == 'macOS'
-      run: |
-        rm /usr/local/bin/chromedriver
-      shell: bash
-    - name: Set up Python 3.13
-      uses: actions/setup-python@v6
+    - uses: ./.github/actions/setup-desktop-tool
       with:
-        python-version: 3.13
-    - name: Install Python dependencies
+        group: dev
+        google-drive-api-key: ${{ inputs.google-drive-api-key }}
+    - uses: ./.github/actions/setup-ghostscript
+    - name: Check compatibility export
+      if: runner.os == 'Linux'
       working-directory: desktop-tool
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
       shell: bash
-    - name: Write Google Drive API credentials to file
-      uses: jsdaniell/create-json@v1.2.3
-      with:
-        name: "client_secrets.json"
-        json: ${{ inputs.google-drive-api-key }}
-        dir: "desktop-tool/"
+      run: |
+        uv export --locked --all-groups --no-emit-project --no-header --format requirements-txt > "$RUNNER_TEMP/desktop-requirements.txt"
+        python - <<'PY'
+        import os
+        from pathlib import Path
+        # Text reads normalize Windows checkout line endings without ignoring dependency changes.
+        assert Path("requirements.txt").read_text(encoding="utf-8") == (Path(os.environ["RUNNER_TEMP"]) / "desktop-requirements.txt").read_text(encoding="utf-8"), "Requirements export is out of date"
+        PY
+    - name: Check desktop formatting
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        uv run --project desktop-tool --locked --group dev ruff check --config desktop-tool/pyproject.toml desktop-tool
+        uv run --project desktop-tool --locked --group dev black --check desktop-tool
+        uv run --project desktop-tool --locked --group dev isort --check-only desktop-tool
+    - name: Check desktop types
+      shell: bash
+      run: uv run --project desktop-tool --locked --group dev mypy --config-file desktop-tool/pyproject.toml desktop-tool/autofill.py desktop-tool/src
     - name: Run tests
       working-directory: desktop-tool
-      run: pytest .
+      env:
+        CHROME_BINARY: ${{ steps.chrome.outputs.chrome-path }}
+        CHROMEDRIVER: ${{ steps.chrome.outputs.chromedriver-path }}
+        SE_CHROMEDRIVER: ${{ steps.chrome.outputs.chromedriver-path }}
+      run: |
+        if [[ "$RUNNER_OS" == Linux ]]; then
+          dbus-run-session -- uv run --locked --group dev python -m pytest .
+        else
+          uv run --locked --group dev python -m pytest .
+        fi
       shell: bash
+    - uses: ./.github/actions/check-desktop-performance
+      with:
+        report-name: source-performance-${{ runner.os }}-${{ runner.arch }}
+    - name: Smoke test source PDF export
+      if: runner.os == 'Linux'
+      working-directory: desktop-tool
+      shell: bash
+      run: |
+        dbus-run-session -- uv run --locked --group dev python tests/smoke_pdf_export.py

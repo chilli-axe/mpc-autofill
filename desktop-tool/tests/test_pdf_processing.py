@@ -1,0 +1,230 @@
+import re
+from io import BytesIO
+from pathlib import Path
+from queue import Queue
+from types import SimpleNamespace
+
+import pytest
+from PIL import Image
+
+from src.constants import Faces, ImageResizeMethods, SourceType
+from src.order import CardImage, CardImageCollection, CardOrder, Details, is_image_valid
+from src.pdf_maker import PdfExporter
+from src.processing import (
+    DTC_CARD_HEIGHT_INCHES,
+    DTC_CARD_WIDTH_INCHES,
+    ImagePostProcessingConfig,
+    calculate_dtc_target_pixel_size,
+    post_process_image,
+    save_processed_image,
+)
+
+
+def image_bytes(image: Image.Image, format: str = "PNG") -> bytes:
+    with BytesIO() as buffer:
+        image.save(buffer, format=format)
+        return buffer.getvalue()
+
+
+def test_indexed_png_exports_as_jpeg():
+    image = Image.new("P", (32, 32))
+    image.putpalette([0, 255, 0] * 256)
+    config = ImagePostProcessingConfig(300, ImageResizeMethods.LANCZOS, output_format="JPEG")
+    processed = post_process_image(image_bytes(image), config)
+    with BytesIO() as output:
+        save_processed_image(processed, output, config)
+        output.seek(0)
+        with Image.open(output) as decoded:
+            assert decoded.format == "JPEG"
+            assert decoded.mode == "RGB"
+            red, green, blue = decoded.getpixel((0, 0))
+            assert red < 5 and green > 250 and blue < 5
+
+
+@pytest.mark.parametrize("mode", ["P", "RGBA", "LA"])
+def test_jpeg_flattens_transparency_on_white(mode):
+    image = Image.new(mode, (32, 32), 0)
+    if mode == "P":
+        image.info["transparency"] = 0
+    config = ImagePostProcessingConfig(
+        300, ImageResizeMethods.LANCZOS, output_format="JPEG", target_pixel_size=(16, 16)
+    )
+    processed = post_process_image(image_bytes(image), config)
+    assert processed.mode == "RGB"
+    assert processed.size == (16, 16)
+    assert processed.getpixel((0, 0)) == (255, 255, 255)
+
+
+@pytest.mark.parametrize("source", ["local", "cached", "download", "permanently_corrupt"])
+def test_truncated_jpeg_validation_and_download_retry(monkeypatch, tmp_path, source):
+    valid = image_bytes(Image.new("RGB", (819, 1113), "red"), "JPEG")
+    truncated = valid[:-300]
+    path = tmp_path / "card.jpg"
+    if source in ("local", "cached"):
+        path.write_bytes(truncated)
+        assert not is_image_valid(str(path))
+    calls = []
+
+    def download(**_kwargs):
+        calls.append(True)
+        path.write_bytes(valid if source == "cached" or (source == "download" and len(calls) == 2) else truncated)
+        return True
+
+    monkeypatch.setattr("src.order.download_google_drive_file", download)
+    card = CardImage(
+        drive_id="card",
+        name="card.jpg",
+        file_path=str(path),
+        slots={0},
+        source_type=SourceType.LOCAL_FILE if source == "local" else SourceType.GOOGLE_DRIVE,
+    )
+    card.download_image(Queue(), SimpleNamespace(update=lambda: None, refresh=lambda: None), None)
+    succeeds = source in ("cached", "download")
+    assert card.downloaded is succeeds
+    assert card.errored is not succeeds
+    assert len(calls) == {"local": 0, "cached": 1, "download": 2, "permanently_corrupt": 2}[source]
+    if succeeds:
+        assert path.read_bytes() == valid
+    elif source == "local":
+        assert path.read_bytes() == truncated  # Never delete the user's source image.
+    else:
+        assert not path.exists()
+
+
+def test_truncated_download_retries_when_post_processing(monkeypatch, tmp_path):
+    valid = image_bytes(Image.new("RGB", (819, 1113), "red"), "JPEG")
+    downloads = []
+
+    class Downloader:
+        def __init__(self, buffer, _request):
+            self.buffer = buffer
+
+        def next_chunk(self):
+            downloads.append(True)
+            self.buffer.write(valid[:-300] if len(downloads) == 1 else valid)
+            return None, True
+
+    monkeypatch.setattr("src.io.MediaIoBaseDownload", Downloader)
+    monkeypatch.setattr(
+        "src.io.find_or_create_google_drive_service",
+        lambda: SimpleNamespace(files=lambda: SimpleNamespace(get_media=lambda **_kwargs: None)),
+    )
+    path = tmp_path / "card.jpg"
+    card = CardImage(drive_id="card", name=path.name, file_path=str(path), slots={0})
+    card.download_image(
+        Queue(),
+        SimpleNamespace(update=lambda: None, refresh=lambda: None),
+        ImagePostProcessingConfig(300, ImageResizeMethods.LANCZOS),
+    )
+    assert len(downloads) == 2
+    assert card.downloaded and not card.errored
+    assert is_image_valid(str(path))
+
+
+@pytest.mark.parametrize("slots", [(0, 2), (1, 3)])
+@pytest.mark.parametrize("mode", ["standard", "drive_thru_cards"])
+def test_sparse_slots_preserve_all_cards_and_dtc_jpeg_deduplication(monkeypatch, tmp_path, slots, mode):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(PdfExporter, "ask_questions", lambda self: None)
+    images = {}
+    for name, color in (("first", "red"), ("second", "blue"), ("back", "black")):
+        path = tmp_path / f"{name}.png"
+        Image.new("RGB", (32, 32), color).save(path)
+        images[name] = CardImage(
+            drive_id=name,
+            name=path.name,
+            file_path=str(path),
+            source_type=SourceType.LOCAL_FILE,
+            slots=set(slots) if name == "back" else {slots[0 if name == "first" else 1]},
+        )
+    order = CardOrder(
+        name="sparse",
+        details=Details(quantity=max(slots) + 1),
+        fronts=CardImageCollection(
+            cards_by_id={name: images[name] for name in ("first", "second")},
+            num_slots=max(slots) + 1,
+            face=Faces.front,
+        ),
+        backs=CardImageCollection(cards_by_id={"back": images["back"]}, num_slots=max(slots) + 1, face=Faces.back),
+    )
+    exporter = PdfExporter(order=order, export_mode=mode, number_of_cards_per_file=1)
+    config = ImagePostProcessingConfig(300, ImageResizeMethods.LANCZOS, output_format="JPEG")
+    if mode == "drive_thru_cards":
+        export = exporter.export
+
+        def check_precomputed_images():
+            paths = [images[name].file_path for name in ("back", "first", "second")]
+            assert list(exporter.processed_images) == paths
+            for path in paths:
+                processed = post_process_image(Path(path).read_bytes(), config)
+                with BytesIO() as buffer:
+                    save_processed_image(processed, buffer, config)
+                    assert exporter.processed_images[path] == buffer.getvalue()
+            export()
+
+        monkeypatch.setattr(exporter, "export", check_precomputed_images)
+    outputs = [Path(path).read_bytes() for path in exporter.execute(config)]
+    page_counts = [len(re.findall(rb"/Type /Page\b", output)) for output in outputs]
+    assert page_counts == ([4] if mode == "drive_thru_cards" else [2, 2])
+    if mode == "drive_thru_cards":
+        assert outputs[0].count(b"DCTDecode") == 3
+    assert exporter.processed_images == {}
+
+
+def test_dtc_preprocessing_failure_clears_cache_and_stops_manager(monkeypatch, tmp_path):
+    order = CardOrder(
+        name="missing",
+        details=Details(quantity=1),
+        fronts=CardImageCollection(num_slots=1, face=Faces.front),
+        backs=CardImageCollection(num_slots=1, face=Faces.back),
+    )
+    valid_path = tmp_path / "back.png"
+    Image.new("RGB", (32, 32), "black").save(valid_path)
+    missing_path = tmp_path / "missing.png"
+    exporter = PdfExporter(order=order, export_mode="drive_thru_cards")
+    exporter.paths_by_slot = {0: (str(valid_path), str(missing_path))}
+    monkeypatch.setattr(exporter, "download_and_collect_images", lambda **_kwargs: None)
+    stop_calls = []
+    monkeypatch.setattr(exporter.manager, "stop", lambda: stop_calls.append(True))
+
+    with pytest.raises(FileNotFoundError) as error:
+        exporter.execute(ImagePostProcessingConfig(300, ImageResizeMethods.LANCZOS, output_format="JPEG"))
+
+    assert error.value.filename == str(missing_path)
+    assert exporter.processed_images == {}
+    assert stop_calls == [True]
+
+
+def test_dtc_exporter_enforces_geometry_with_explicit_overrides(monkeypatch):
+    monkeypatch.setattr(PdfExporter, "configure_bars", lambda self: None)
+    monkeypatch.setattr(PdfExporter, "generate_file_path", lambda self: None)
+    exporter = PdfExporter(
+        order=CardOrder(fronts=CardImageCollection()),
+        export_mode="drive_thru_cards",
+        card_width_in_inches=4,
+        card_height_in_inches=5,
+        separate_faces=True,
+    )
+    try:
+        assert (exporter.card_width_in_inches, exporter.card_height_in_inches) == (2.73, 3.71)
+        assert exporter.separate_faces is False
+    finally:
+        exporter.manager.stop()
+
+
+def test_dtc_dpi_round_trip_matches_cli_range():
+    for dpi in range(100, 1201):
+        for dimension in (DTC_CARD_WIDTH_INCHES, DTC_CARD_HEIGHT_INCHES):
+            assert round(round(dimension * dpi) / dimension) == dpi
+
+
+def test_target_sized_jpeg_preserves_dpi_metadata():
+    size = calculate_dtc_target_pixel_size(300)
+    config = ImagePostProcessingConfig(300, ImageResizeMethods.LANCZOS, output_format="JPEG", target_pixel_size=size)
+    processed = post_process_image(image_bytes(Image.new("RGB", size, "red")), config)
+    with BytesIO() as output:
+        save_processed_image(processed, output, config)
+        output.seek(0)
+        with Image.open(output) as decoded:
+            assert decoded.size == size
+            assert decoded.info["dpi"] == (300, 300)

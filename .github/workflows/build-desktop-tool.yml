@@ -1,0 +1,141 @@
+name: Desktop tool build
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version embedded in the executable (for example, 1.1.0)
+        required: true
+        type: string
+      validation-build-run-id:
+        description: Validate existing packages instead of compiling (use test version 1.2.3)
+        required: false
+        type: string
+      validation-replacement-run-id:
+        description: Separate successful build of the same commit for replacement checks
+        required: false
+        type: string
+
+jobs:
+  release-status:
+    if: inputs.validation-build-run-id == ''
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+    steps:
+      - name: Mark native release validation pending on the commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -f state=pending -f context="Native desktop release" \
+            -f target_url="https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            -f description="Testing source and packages on all four desktop targets" > /dev/null
+  test:
+    if: inputs.validation-build-run-id == ''
+    needs: release-status
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    env:
+      MPC_AUTOFILL_RELEASE_CHECKS: "1"
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+          - macos-15-intel
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/test-desktop-tool
+        with:
+          google-drive-api-key: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
+
+  build:
+    name: Build ${{ matrix.target }}
+    needs: release-status
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: desktop-tool
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: macos-arm
+            filename: autofill-macos-arm.command
+            macos-arch: arm64
+          - os: macos-15-intel
+            target: macos-intel
+            filename: autofill-macos-intel.command
+            macos-arch: x86_64
+          - os: ubuntu-22.04 # Build against glibc 2.35 so the bundle runs on Debian 12.
+            target: linux
+            filename: autofill-linux.bin
+            macos-arch: ""
+          - os: windows-latest
+            target: windows
+            filename: autofill-windows.exe
+            macos-arch: ""
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-desktop-tool
+        with:
+          group: build
+          google-drive-api-key: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
+      - name: Require Google Drive API credentials
+        env:
+          GOOGLE_DRIVE_API_KEY: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
+        shell: bash
+        run: test -n "$GOOGLE_DRIVE_API_KEY" || (echo "Add desktop-tool/client_secrets.json as the GOOGLE_DRIVE_API_KEY repository secret." && exit 1)
+      - uses: ./.github/actions/build-desktop-tool
+        with:
+          filename: ${{ matrix.filename }}
+          version: ${{ inputs.version }}
+          macos-arch: ${{ matrix.macos-arch }}
+          product-name: ${{ github.repository_owner }}-${{ github.event.repository.name }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.target }}
+      - name: Smoke test bundled executable
+        shell: bash
+        run: |
+          if [[ "$RUNNER_OS" == Linux ]]; then
+            help_output=$(dbus-run-session -- ./build/${{ matrix.filename }} --help)
+          else
+            help_output=$(./build/${{ matrix.filename }} --help)
+          fi
+          grep -qi MakePlayingCards <<< "$help_output"
+          grep -qi DriveThruCards <<< "$help_output"
+          stat -f "%N: %z bytes" build/${{ matrix.filename }} 2>/dev/null || stat -c "%n: %s bytes" build/${{ matrix.filename }}
+      - name: Upload unsigned artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ matrix.target }} Unsigned Build
+          path: desktop-tool/build/${{ matrix.filename }}
+
+  release-result:
+    if: always() && inputs.validation-build-run-id == ''
+    needs: [test, build]
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+    steps:
+      - name: Report all native release gates on the commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NATIVE_STATE: ${{ needs.test.result == 'success' && needs.build.result == 'success' && 'success' || 'failure' }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -f state="$NATIVE_STATE" -f context="Native desktop release" \
+            -f target_url="https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            -f description="Source and packaged gates for Windows, Linux and both Macs" > /dev/null
+
+  validate:
+    if: inputs.validation-build-run-id != ''
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/validate-desktop-packages.yml
+    with:
+      build-run-id: ${{ inputs.validation-build-run-id }}
+      replacement-run-id: ${{ inputs.validation-replacement-run-id }}

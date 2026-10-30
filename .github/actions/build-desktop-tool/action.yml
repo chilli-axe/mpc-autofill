@@ -1,0 +1,134 @@
+name: Compile the locked desktop tool
+description: Compile using the same locked runtime as tests, without a compiler action installing its own packages.
+inputs:
+  filename:
+    description: Output executable filename.
+    required: true
+  version:
+    description: Numeric release file version.
+    required: true
+  product-name:
+    description: Unique identity for this repository, run, attempt, and target.
+    required: true
+  macos-arch:
+    description: macOS target architecture.
+    default: ""
+  sign:
+    description: Enable macOS distribution signing; Windows signing remains in the caller.
+    default: "false"
+  sign-identity:
+    description: macOS signing identity.
+    default: ""
+  keyring-file:
+    description: macOS signing keychain path.
+    default: ""
+  keyring-password:
+    description: macOS keychain password.
+    default: ""
+  app-name:
+    description: macOS signing application identifier.
+    default: ""
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/setup-ghostscript
+    - name: Compile with Nuitka
+      shell: bash
+      working-directory: desktop-tool
+      env:
+        DESKTOP_FILENAME: ${{ inputs.filename }}
+        DESKTOP_VERSION: ${{ inputs.version }}
+        DESKTOP_PRODUCT: ${{ inputs.product-name }}
+        DESKTOP_REPOSITORY: ${{ github.repository }}
+        DESKTOP_MACOS_ARCH: ${{ inputs.macos-arch }}
+        DESKTOP_SIGN: ${{ inputs.sign }}
+        DESKTOP_SIGN_IDENTITY: ${{ inputs.sign-identity }}
+        DESKTOP_KEYRING_FILE: ${{ inputs.keyring-file }}
+        DESKTOP_KEYRING_PASSWORD: ${{ inputs.keyring-password }}
+        DESKTOP_APP_NAME: ${{ inputs.app-name }}
+        PYTHONUTF8: "1"
+      run: |
+        set -euo pipefail
+        uv run --locked --no-default-groups --group build python -VV
+        uv run --locked --no-default-groups --group build python -m nuitka --version
+        uv run --locked --no-default-groups --group build python write_build_info.py --version "$DESKTOP_VERSION" --repository "$DESKTOP_REPOSITORY"
+        options=(--output-dir=build --output-filename="$DESKTOP_FILENAME" --file-version="$DESKTOP_VERSION" --product-name="$DESKTOP_PRODUCT" --assume-yes-for-downloads)
+        # Some CPython distributions provide single-threaded Zstandard only.
+        compression_flags=$(uv run --locked --no-default-groups --group build python tests/check_onefile_compression.py)
+        if [[ -n "$compression_flags" ]]; then
+          read -r -a compression_options <<< "$compression_flags"
+          options+=("${compression_options[@]}")
+        fi
+        if [[ "$RUNNER_OS" == macOS ]]; then
+          options+=(--macos-target-arch="$DESKTOP_MACOS_ARCH")
+          if [[ "$DESKTOP_SIGN" == true ]]; then
+            options+=(--macos-sign-notarization --macos-sign-identity="$DESKTOP_SIGN_IDENTITY" --macos-sign-keyring-filename="$DESKTOP_KEYRING_FILE" --macos-sign-keyring-password="$DESKTOP_KEYRING_PASSWORD" --macos-signed-app-name="$DESKTOP_APP_NAME")
+          fi
+        fi
+        uv run --locked --no-default-groups --group build python -m nuitka "${options[@]}" autofill.py
+    - name: Verify native architecture
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      env:
+        DESKTOP_EXECUTABLE: desktop-tool/build/${{ inputs.filename }}
+        DESKTOP_MACOS_ARCH: ${{ inputs.macos-arch }}
+      run: |
+        python - <<'PY'
+        import os, struct, sys
+        from pathlib import Path
+        data = Path(os.environ["DESKTOP_EXECUTABLE"]).read_bytes()
+        if sys.platform == "win32":
+            offset = struct.unpack_from("<I", data, 0x3c)[0]
+            assert data[offset:offset+4] == b"PE\0\0"
+            assert struct.unpack_from("<H", data, offset+4)[0] == 0x8664
+        elif sys.platform == "darwin":
+            assert data[:4] == b"\xcf\xfa\xed\xfe"
+            expected = 0x100000c if os.environ["DESKTOP_MACOS_ARCH"] == "arm64" else 0x1000007
+            assert struct.unpack_from("<I", data, 4)[0] == expected
+        else:
+            assert data[:5] == b"\x7fELF\x02"
+            assert struct.unpack_from("<H", data, 18)[0] == 62
+        print("Executable architecture verified")
+        PY
+    - name: Smoke test Linux PDF export and bundled wakepy
+      if: runner.os == 'Linux'
+      shell: bash
+      working-directory: desktop-tool
+      env:
+        DESKTOP_FILENAME: ${{ inputs.filename }}
+      run: |
+        uv run --locked --no-default-groups --group build python -c "from src.icc import _download_profile; assert _download_profile() is not None"
+        dbus-run-session -- uv run --locked --no-default-groups --group build python tests/smoke_pdf_export.py "build/$DESKTOP_FILENAME"
+    - name: Verify Linux bundle in clean Debian 12
+      if: runner.os == 'Linux'
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      env:
+        DESKTOP_FILENAME: ${{ inputs.filename }}
+      run: |
+        docker run --rm \
+          -v "$GITHUB_WORKSPACE/desktop-tool:/desktop:ro" \
+          -v "$RUNNER_TEMP/desktop-ghostscript:$RUNNER_TEMP/desktop-ghostscript:ro" \
+          -v "$HOME/.mpc-autofill:/root/.mpc-autofill:ro" \
+          -e "PATH=$RUNNER_TEMP/desktop-ghostscript/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+          -e "DESKTOP_FILENAME=$DESKTOP_FILENAME" debian:12-slim bash -euc '
+            apt-get update
+            apt-get install --yes ca-certificates python3-pil dbus-daemon libfontconfig1
+            /desktop/build/"$DESKTOP_FILENAME" --check-tls
+            /desktop/build/"$DESKTOP_FILENAME" --help
+            dbus-run-session -- python3 /desktop/tests/smoke_pdf_export.py /desktop/build/"$DESKTOP_FILENAME"
+          '
+    - uses: ./.github/actions/check-desktop-performance
+      with:
+        executable: build/${{ inputs.filename }}
+        report-name: packaged-performance-${{ runner.os }}-${{ runner.arch }}
+    - name: Smoke test bundled identity and TLS
+      shell: bash
+      working-directory: desktop-tool
+      env:
+        DESKTOP_FILENAME: ${{ inputs.filename }}
+        RELEASE_VERSION: ${{ inputs.version }}
+        RELEASE_REPOSITORY: ${{ github.repository }}
+      run: |
+        test "$(./build/"$DESKTOP_FILENAME" --version)" = "MPC Autofill $RELEASE_VERSION ($RELEASE_REPOSITORY)"
+        env -u SSL_CERT_FILE -u SSL_CERT_DIR ./build/"$DESKTOP_FILENAME" --check-tls
