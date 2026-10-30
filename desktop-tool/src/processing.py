@@ -30,7 +30,6 @@ class ImagePostProcessingConfig:
     output_format: Optional[str] = None
     jpeg_quality: int = 95
     target_pixel_size: Optional[tuple[int, int]] = None
-    embed_dpi_metadata: bool = False
 
 
 def post_process_image(raw_image: bytes, config: ImagePostProcessingConfig) -> "Image":
@@ -68,8 +67,7 @@ def save_processed_image(
 ) -> None:
     # Remove XMP data if it's present in the image info to avoid "XMP data is too long" error.
     # JPEG format has a 64KB limit for XMP metadata in a single APP1 segment.
-    if "xmp" in img.info:
-        img.info.pop("xmp")
+    img.info.pop("xmp", None)
 
     img.save(file_path, **_build_save_kwargs(config=config))
 
@@ -82,12 +80,6 @@ def _build_save_kwargs(config: ImagePostProcessingConfig) -> dict[str, Any]:
         save_kwargs["quality"] = config.jpeg_quality
         save_kwargs["subsampling"] = 0
         save_kwargs["optimize"] = True
-    # Embed DPI metadata to ensure PDF tools correctly interpret the image resolution.
-    # This is critical for DriveThruCards where the target DPI must be 300.
-    if config.embed_dpi_metadata and config.target_pixel_size:
-        # Calculate DPI from target pixel size and DTC card dimensions
-        target_width, target_height = config.target_pixel_size
-        dpi_x = round(target_width / DTC_CARD_WIDTH_INCHES)
-        dpi_y = round(target_height / DTC_CARD_HEIGHT_INCHES)
-        save_kwargs["dpi"] = (dpi_x, dpi_y)
+    if config.target_pixel_size:
+        save_kwargs["dpi"] = (config.max_dpi,) * 2
     return save_kwargs

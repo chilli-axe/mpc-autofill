@@ -13,7 +13,14 @@ runs:
     - name: Prepare the verified SWOP profile
       shell: bash
       working-directory: desktop-tool
-      run: uv run --locked --group dev python -c "from src.icc import _download_profile; assert _download_profile() is not None"
+      run: |
+        uv run --locked --group dev python - <<'PYTHON'
+        import hashlib
+        from src.icc import ICC_PROFILE_SHA256, _download_profile, get_profile_cache_path
+        profile = get_profile_cache_path()
+        if not profile.is_file() or hashlib.sha256(profile.read_bytes()).hexdigest() != ICC_PROFILE_SHA256:
+            assert _download_profile() is not None
+        PYTHON
     - name: Enforce cached-image, PDF export and reuse budgets
       shell: bash
       working-directory: desktop-tool

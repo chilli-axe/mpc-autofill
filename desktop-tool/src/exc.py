@@ -19,8 +19,7 @@ class ValidationException(Exception):
 class ImageDownloadError(Exception):
     def __init__(self, failed_images: list[tuple[str, str]]) -> None:
         failed_list = "\n".join(
-            f"- {name or 'Unknown image'}" + (f" (Drive ID: {drive_id})" if drive_id else "")
-            for name, drive_id in failed_images
+            f"- {name}" + (f" (Drive ID: {drive_id})" if drive_id else "") for name, drive_id in failed_images
         )
         super().__init__(
             "Some card images could not be downloaded, so the tool has stopped before creating your order.\n"

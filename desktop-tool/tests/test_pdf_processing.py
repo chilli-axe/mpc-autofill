@@ -11,7 +11,10 @@ from src.constants import Faces, ImageResizeMethods, SourceType
 from src.order import CardImage, CardImageCollection, CardOrder, Details, is_image_valid
 from src.pdf_maker import PdfExporter
 from src.processing import (
+    DTC_CARD_HEIGHT_INCHES,
+    DTC_CARD_WIDTH_INCHES,
     ImagePostProcessingConfig,
+    calculate_dtc_target_pixel_size,
     post_process_image,
     save_processed_image,
 )
@@ -146,9 +149,82 @@ def test_sparse_slots_preserve_all_cards_and_dtc_jpeg_deduplication(monkeypatch,
     )
     exporter = PdfExporter(order=order, export_mode=mode, number_of_cards_per_file=1)
     config = ImagePostProcessingConfig(300, ImageResizeMethods.LANCZOS, output_format="JPEG")
+    if mode == "drive_thru_cards":
+        export = exporter.export
+
+        def check_precomputed_images():
+            paths = [images[name].file_path for name in ("back", "first", "second")]
+            assert list(exporter.processed_images) == paths
+            for path in paths:
+                processed = post_process_image(Path(path).read_bytes(), config)
+                with BytesIO() as buffer:
+                    save_processed_image(processed, buffer, config)
+                    assert exporter.processed_images[path] == buffer.getvalue()
+            export()
+
+        monkeypatch.setattr(exporter, "export", check_precomputed_images)
     outputs = [Path(path).read_bytes() for path in exporter.execute(config)]
     page_counts = [len(re.findall(rb"/Type /Page\b", output)) for output in outputs]
     assert page_counts == ([4] if mode == "drive_thru_cards" else [2, 2])
     if mode == "drive_thru_cards":
         assert outputs[0].count(b"DCTDecode") == 3
     assert exporter.processed_images == {}
+
+
+def test_dtc_preprocessing_failure_clears_cache_and_stops_manager(monkeypatch, tmp_path):
+    order = CardOrder(
+        name="missing",
+        details=Details(quantity=1),
+        fronts=CardImageCollection(num_slots=1, face=Faces.front),
+        backs=CardImageCollection(num_slots=1, face=Faces.back),
+    )
+    valid_path = tmp_path / "back.png"
+    Image.new("RGB", (32, 32), "black").save(valid_path)
+    missing_path = tmp_path / "missing.png"
+    exporter = PdfExporter(order=order, export_mode="drive_thru_cards")
+    exporter.paths_by_slot = {0: (str(valid_path), str(missing_path))}
+    monkeypatch.setattr(exporter, "download_and_collect_images", lambda **_kwargs: None)
+    stop_calls = []
+    monkeypatch.setattr(exporter.manager, "stop", lambda: stop_calls.append(True))
+
+    with pytest.raises(FileNotFoundError) as error:
+        exporter.execute(ImagePostProcessingConfig(300, ImageResizeMethods.LANCZOS, output_format="JPEG"))
+
+    assert error.value.filename == str(missing_path)
+    assert exporter.processed_images == {}
+    assert stop_calls == [True]
+
+
+def test_dtc_exporter_enforces_geometry_with_explicit_overrides(monkeypatch):
+    monkeypatch.setattr(PdfExporter, "configure_bars", lambda self: None)
+    monkeypatch.setattr(PdfExporter, "generate_file_path", lambda self: None)
+    exporter = PdfExporter(
+        order=CardOrder(fronts=CardImageCollection()),
+        export_mode="drive_thru_cards",
+        card_width_in_inches=4,
+        card_height_in_inches=5,
+        separate_faces=True,
+    )
+    try:
+        assert (exporter.card_width_in_inches, exporter.card_height_in_inches) == (2.73, 3.71)
+        assert exporter.separate_faces is False
+    finally:
+        exporter.manager.stop()
+
+
+def test_dtc_dpi_round_trip_matches_cli_range():
+    for dpi in range(100, 1201):
+        for dimension in (DTC_CARD_WIDTH_INCHES, DTC_CARD_HEIGHT_INCHES):
+            assert round(round(dimension * dpi) / dimension) == dpi
+
+
+def test_target_sized_jpeg_preserves_dpi_metadata():
+    size = calculate_dtc_target_pixel_size(300)
+    config = ImagePostProcessingConfig(300, ImageResizeMethods.LANCZOS, output_format="JPEG", target_pixel_size=size)
+    processed = post_process_image(image_bytes(Image.new("RGB", size, "red")), config)
+    with BytesIO() as output:
+        save_processed_image(processed, output, config)
+        output.seek(0)
+        with Image.open(output) as decoded:
+            assert decoded.size == size
+            assert decoded.info["dpi"] == (300, 300)

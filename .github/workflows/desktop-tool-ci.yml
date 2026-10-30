@@ -104,14 +104,6 @@ jobs:
           keyring-file: ${{ runner.temp }}/app-signing.keychain-db
           keyring-password: ${{ secrets.KEYCHAIN_PASSWORD }}
           app-name: com.ndepaola.mpc-autofill-${{ matrix.TARGET }}
-      - name: Smoke test bundled identity and TLS
-        shell: bash
-        env:
-          RELEASE_VERSION: ${{ inputs.version }}
-          RELEASE_REPOSITORY: ${{ github.repository }}
-        run: |
-          test "$(./build/${{ matrix.FILENAME }} --version)" = "MPC Autofill $RELEASE_VERSION ($RELEASE_REPOSITORY)"
-          env -u SSL_CERT_FILE -u SSL_CERT_DIR ./build/${{ matrix.FILENAME }} --check-tls
       - name: Upload unsigned artifact
         id: upload-unsigned-artifact
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

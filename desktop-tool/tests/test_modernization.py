@@ -125,24 +125,24 @@ def test_ghostscript_version_floor(version, expected):
     assert pdf_maker.is_ghostscript_version_supported(version) is expected
 
 
-def test_supported_windows_install_wins_over_old_path(monkeypatch, tmp_path):
+@pytest.mark.parametrize("path_result", [None, "/old/gs"])
+def test_supported_windows_install_wins_over_old_path(monkeypatch, tmp_path, path_result):
     current = tmp_path / "gs" / "gs10.08.0" / "bin" / "gswin64c.exe"
     current.parent.mkdir(parents=True)
     current.touch()
     monkeypatch.setenv("ProgramFiles", str(tmp_path))
     monkeypatch.setattr(pdf_maker.sys, "platform", "win32")
-    monkeypatch.setattr(pdf_maker.shutil, "which", lambda name, **_: "/old/gs" if name == "gs" else None)
-    monkeypatch.setattr(
-        pdf_maker, "get_ghostscript_version", lambda path: "10.02.1" if path == "/old/gs" else "10.08.0"
-    )
+    monkeypatch.setattr(pdf_maker.shutil, "which", lambda name, **_: path_result if name == "gs" else None)
+    if path_result is not None:
+        monkeypatch.setattr(
+            pdf_maker, "get_ghostscript_version", lambda path: "10.02.1" if path == "/old/gs" else "10.08.0"
+        )
     assert pdf_maker.get_ghostscript_path() == str(current)
     assert pdf_maker.get_ghostscript_path("/old/gs") == "/old/gs", "Explicit paths must not silently change"
 
 
-def test_failed_ghostscript_upgrade_does_not_loop(monkeypatch):
-    monkeypatch.setattr(autofill, "get_ghostscript_path", lambda: "/old/gs")
-    monkeypatch.setattr(autofill, "get_ghostscript_version", lambda _: "10.00.0")
-    monkeypatch.setattr(autofill.click, "confirm", lambda *_, **__: True)
+def test_failed_ghostscript_upgrade_does_not_loop(monkeypatch, fake_gs):
+    fake_gs(["/old/gs", "/old/gs"], version="10.00.0")
     attempts = []
     monkeypatch.setattr(autofill, "_install_ghostscript", lambda: attempts.append(1) or True)
     with pytest.raises(autofill.click.ClickException, match="Upgrade Ghostscript and check your PATH"):

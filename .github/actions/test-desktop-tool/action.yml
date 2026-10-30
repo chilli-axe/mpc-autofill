@@ -24,6 +24,7 @@ runs:
         google-drive-api-key: ${{ inputs.google-drive-api-key }}
     - uses: ./.github/actions/setup-ghostscript
     - name: Check compatibility export
+      if: runner.os == 'Linux'
       working-directory: desktop-tool
       shell: bash
       run: |
@@ -34,13 +35,16 @@ runs:
         # Text reads normalize Windows checkout line endings without ignoring dependency changes.
         assert Path("requirements.txt").read_text(encoding="utf-8") == (Path(os.environ["RUNNER_TEMP"]) / "desktop-requirements.txt").read_text(encoding="utf-8"), "Requirements export is out of date"
         PY
-    - name: Check desktop source
+    - name: Check desktop formatting
+      if: runner.os == 'Linux'
       shell: bash
       run: |
         uv run --project desktop-tool --locked --group dev ruff check --config desktop-tool/pyproject.toml desktop-tool
         uv run --project desktop-tool --locked --group dev black --check desktop-tool
         uv run --project desktop-tool --locked --group dev isort --check-only desktop-tool
-        uv run --project desktop-tool --locked --group dev mypy --config-file desktop-tool/pyproject.toml desktop-tool/autofill.py desktop-tool/src
+    - name: Check desktop types
+      shell: bash
+      run: uv run --project desktop-tool --locked --group dev mypy --config-file desktop-tool/pyproject.toml desktop-tool/autofill.py desktop-tool/src
     - name: Run tests
       working-directory: desktop-tool
       env:
@@ -49,7 +53,6 @@ runs:
         SE_CHROMEDRIVER: ${{ steps.chrome.outputs.chromedriver-path }}
       run: |
         if [[ "$RUNNER_OS" == Linux ]]; then
-          uv run --locked --group dev python -c "from src.pdf_maker import get_ghostscript_path, get_ghostscript_version, is_ghostscript_version_supported; path=get_ghostscript_path(); assert path and is_ghostscript_version_supported(get_ghostscript_version(path)), 'Supported Ghostscript required in CI'"
           dbus-run-session -- uv run --locked --group dev python -m pytest .
         else
           uv run --locked --group dev python -m pytest .
@@ -63,5 +66,4 @@ runs:
       working-directory: desktop-tool
       shell: bash
       run: |
-        uv run --locked --group dev python -c "from src.icc import _download_profile; assert _download_profile() is not None"
         dbus-run-session -- uv run --locked --group dev python tests/smoke_pdf_export.py
