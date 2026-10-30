@@ -2728,8 +2728,13 @@ def test_prune_stale_onefile_caches_preserves_windows_running_builds(tmp_path):
     if venv_config.exists():
         shutil.copy2(venv_config, executable / "pyvenv.cfg")
     code = "held = open(Path(sys.argv[1]).parent / 'held', 'w')"
+    # A running executable alone does not block the rename, so mirror the app's open .in-use file.
+    in_use = "held = open(Path(sys.argv[1]).parent / '.in-use', 'a')"
 
-    with running_cache_process(sys.executable, open_file, code), running_cache_process(copied_python, executable, ""):
+    with (
+        running_cache_process(sys.executable, open_file, code),
+        running_cache_process(copied_python, executable, in_use),
+    ):
         autofill_cli.prune_stale_onefile_caches(str(current))
         for directory in (current, open_file, executable):
             assert (directory / "marker").exists()

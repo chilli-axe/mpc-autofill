@@ -94,10 +94,11 @@ def prune_stale_onefile_caches(extraction_directory: str) -> None:
 configure_tls()
 if "__compiled__" in globals():
     _extraction_directory = os.path.dirname(os.path.abspath(__file__))
-    if sys.platform != "win32":
-        # Held for the process lifetime so other builds' pruning skips this extraction.
-        with suppress(OSError):
-            _onefile_cache_lock = open(os.path.join(_extraction_directory, ".in-use"), "a")
+    # Held open for the process lifetime so other builds' pruning skips this extraction:
+    # Windows refuses to rename a folder with an open file, and POSIX pruning checks the lock.
+    with suppress(OSError):
+        _onefile_cache_lock = open(os.path.join(_extraction_directory, ".in-use"), "a")
+        if sys.platform != "win32":
             fcntl.flock(_onefile_cache_lock, fcntl.LOCK_SH)
     prune_stale_onefile_caches(_extraction_directory)
 
