@@ -60,6 +60,10 @@ jobs:
           ARTIFACT: ${{ matrix.target }} Unsigned Build
         run: |
           set -euo pipefail
+          if [[ -z "$REPLACEMENT_RUN" ]]; then
+            echo "::error::Validation needs validation-replacement-run-id (a separate successful build of the same commit)."
+            exit 1
+          fi
           test "$BUILD_RUN" != "$REPLACEMENT_RUN"
           for build_run in "$BUILD_RUN" "$REPLACEMENT_RUN"; do
             gh api "repos/$GITHUB_REPOSITORY/actions/runs/$build_run" > "$RUNNER_TEMP/build-run.json"
