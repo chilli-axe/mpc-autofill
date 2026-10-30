@@ -1,7 +1,14 @@
+import os
+import platform
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
+
+from src.logging import logger
 
 if TYPE_CHECKING:
     from selenium.webdriver.chrome.webdriver import WebDriver as Chrome
@@ -154,6 +161,35 @@ def _detect_chrome_version(binary_location: Optional[str] = None) -> Optional[in
     return None
 
 
+def _prepare_native_mac_driver(major: int) -> str:
+    import undetected_chromedriver as uc
+    from selenium.webdriver.common.selenium_manager import SeleniumManager
+
+    target = Path(uc.Patcher.data_path) / f"chromedriver-mac-arm64-{major}"
+    if target.exists() and uc.Patcher(executable_path=str(target)).is_binary_patched():
+        return str(target)
+
+    source = SeleniumManager().binary_paths(["--browser", "chrome", "--driver-version", str(major)])["driver_path"]
+    target.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=target.parent, prefix=f"{target.name}-")
+    try:
+        os.close(fd)
+        shutil.copy2(source, tmp)
+        patcher = uc.Patcher(executable_path=tmp)
+        patcher.patch_exe()
+        if not patcher.is_binary_patched():
+            raise RuntimeError("The native ChromeDriver binary was not patched")
+        subprocess.run(["/usr/bin/codesign", "--force", "--sign", "-", tmp], check=True, capture_output=True)
+        # macOS caches signatures per vnode, so publish a new inode after patching and signing.
+        os.replace(tmp, target)
+    finally:
+        Path(tmp).unlink(missing_ok=True)
+    for stale in target.parent.glob("chromedriver-mac-arm64-*"):
+        if stale != target:
+            stale.unlink(missing_ok=True)
+    return str(target)
+
+
 def get_undetected_chrome_driver(
     headless: bool = False,
     binary_location: Optional[str] = None,
@@ -181,11 +217,25 @@ def get_undetected_chrome_driver(
     if headless:
         options.add_argument("--headless=new")
     options.binary_location = binary_location
-    if user_data_dir is not None:
-        options.add_argument(f"--user-data-dir={user_data_dir}")
     if profile_directory is not None:
         options.add_argument(f"--profile-directory={profile_directory}")
 
     # undetected-chromedriver handles stealth automatically.
     # Detect the Chrome version ourselves since auto-detection can fail.
-    return uc.Chrome(options=options, version_main=_detect_chrome_version(binary_location))
+    major = _detect_chrome_version(binary_location)
+    driver_path = None
+    if sys.platform == "darwin" and platform.machine() == "arm64":
+        # undetected-chromedriver only downloads Intel drivers for macOS, which need Rosetta.
+        try:
+            if major is None:
+                raise RuntimeError("The Chrome major version could not be detected")
+            driver_path = _prepare_native_mac_driver(major)
+        except Exception as exc:
+            logger.warning(
+                f"Could not prepare the native ChromeDriver: {exc}. "
+                "Falling back to undetected-chromedriver's default driver. "
+                "If that also fails, install Rosetta as a workaround."
+            )
+    return uc.Chrome(
+        options=options, version_main=major, user_data_dir=user_data_dir, driver_executable_path=driver_path
+    )
