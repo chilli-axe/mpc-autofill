@@ -4,13 +4,14 @@ import inspect
 import logging
 import os
 import re
+import shutil
 import subprocess
 import sys
 import textwrap
 import time
 import zlib
 from concurrent.futures import ThreadPoolExecutor
-from contextlib import nullcontext
+from contextlib import contextmanager, nullcontext
 from io import BytesIO
 from itertools import groupby
 from pathlib import Path
@@ -2610,7 +2611,8 @@ def test_prune_stale_onefile_caches_removes_only_sibling_build_dirs(tmp_path):
     cache_root = tmp_path / "mpc-autofill"
     current = cache_root / "bwsinger-mpc-autofill-build2-1.2.5"
     stale = cache_root / "bwsinger-mpc-autofill-build1-1.2.5"
-    for directory in (current, stale):
+    interrupted = cache_root / "x.stale-123"
+    for directory in (current, stale, interrupted):
         directory.mkdir(parents=True)
         (directory / "autofill.bin").touch()
     (cache_root / "unrelated-file.txt").touch()
@@ -2619,6 +2621,7 @@ def test_prune_stale_onefile_caches_removes_only_sibling_build_dirs(tmp_path):
 
     assert current.exists()
     assert not stale.exists()
+    assert not interrupted.exists()
     assert (cache_root / "unrelated-file.txt").exists()
 
     # refuses to delete anything when not inside an mpc-autofill cache directory
@@ -2628,6 +2631,94 @@ def test_prune_stale_onefile_caches_removes_only_sibling_build_dirs(tmp_path):
     other_sibling.mkdir(parents=True)
     autofill_cli.prune_stale_onefile_caches(str(other))
     assert other_sibling.exists()
+
+
+@contextmanager
+def running_cache_process(executable, directory, code):
+    ready = directory / "ready"
+    script = "import sys\nfrom pathlib import Path\n" + code + "\nPath(sys.argv[1]).touch()\nsys.stdin.read()\n"
+    with subprocess.Popen([str(executable), "-c", script, str(ready)], stdin=subprocess.PIPE) as process:
+        try:
+            deadline = time.monotonic() + 10
+            while not ready.exists():
+                assert process.poll() is None, "Cache process exited before becoming ready"
+                assert time.monotonic() < deadline, "Cache process did not become ready"
+                time.sleep(0.01)
+            yield
+        finally:
+            try:
+                process.communicate(timeout=10)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=10)
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="POSIX file locks")
+def test_prune_stale_onefile_caches_preserves_locked_build(tmp_path):
+    current = tmp_path / "mpc-autofill" / "current"
+    sibling = current.parent / "running"
+    current.mkdir(parents=True)
+    sibling.mkdir()
+    marker = sibling / "marker"
+    marker.touch()
+    code = "import fcntl\nlock = open(Path(sys.argv[1]).parent / '.in-use', 'a')\nfcntl.flock(lock, fcntl.LOCK_SH)"
+
+    with running_cache_process(sys.executable, sibling, code):
+        autofill_cli.prune_stale_onefile_caches(str(current))
+        assert marker.exists()
+        assert current.exists()
+
+    autofill_cli.prune_stale_onefile_caches(str(current))
+    assert not sibling.exists()
+    assert current.exists()
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows open-file and executable locks")
+def test_prune_stale_onefile_caches_preserves_windows_running_builds(tmp_path):
+    current = tmp_path / "mpc-autofill" / "current"
+    open_file = current.parent / "open-file"
+    executable = current.parent / "executable"
+    for directory in (current, open_file, executable):
+        directory.mkdir(parents=True)
+        (directory / "marker").touch()
+    copied_python = executable / "python.exe"
+    shutil.copy2(sys.executable, copied_python)
+    venv_config = Path(sys.prefix) / "pyvenv.cfg"
+    if venv_config.exists():
+        shutil.copy2(venv_config, executable / "pyvenv.cfg")
+    code = "held = open(Path(sys.argv[1]).parent / 'held', 'w')"
+
+    with running_cache_process(sys.executable, open_file, code), running_cache_process(copied_python, executable, ""):
+        autofill_cli.prune_stale_onefile_caches(str(current))
+        for directory in (current, open_file, executable):
+            assert (directory / "marker").exists()
+        assert (open_file / "held").exists()
+        assert copied_python.exists()
+
+    autofill_cli.prune_stale_onefile_caches(str(current))
+    assert not open_file.exists()
+    assert not executable.exists()
+    assert (current / "marker").exists()
+
+
+def test_prune_stale_onefile_caches_continues_after_rename_error(tmp_path, monkeypatch):
+    current = tmp_path / "mpc-autofill" / "current"
+    blocked = current.parent / "blocked"
+    stale = current.parent / "stale"
+    for directory in (current, blocked, stale):
+        directory.mkdir(parents=True)
+    rename = os.rename
+
+    def fail_for_blocked(source, destination):
+        if source == str(blocked):
+            raise OSError("in use")
+        rename(source, destination)
+
+    monkeypatch.setattr(autofill_cli.os, "rename", fail_for_blocked)
+    autofill_cli.prune_stale_onefile_caches(str(current))
+    assert current.exists()
+    assert blocked.exists()
+    assert not stale.exists()
 
 
 def test_console_filter_hides_file_only_records():

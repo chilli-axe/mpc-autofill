@@ -32,6 +32,7 @@ from collections.abc import Callable
 from contextlib import nullcontext
 from copy import copy
 from typing import TYPE_CHECKING, Optional
+from uuid import uuid4
 
 import certifi
 import click
@@ -47,6 +48,9 @@ from src.constants import (
 from src.formatting import bold
 from src.logging import logger
 from src.update_check import check_for_updates
+
+if sys.platform != "win32":
+    import fcntl
 
 if TYPE_CHECKING:
     from src.driver import AutofillDriver
@@ -73,11 +77,25 @@ def prune_stale_onefile_caches(extraction_directory: str) -> None:
     for entry in os.listdir(parent_directory):
         sibling = os.path.join(parent_directory, entry)
         if sibling != extraction_directory and os.path.isdir(sibling):
-            shutil.rmtree(sibling, ignore_errors=True)
+            stale = f"{sibling}.stale-{uuid4().hex}"
+            try:
+                if sys.platform == "win32":
+                    os.rename(sibling, stale)
+                else:
+                    # Older builds hold no lock and are still pruned as before.
+                    with open(os.path.join(sibling, ".in-use"), "a") as lock:
+                        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                        os.rename(sibling, stale)
+                shutil.rmtree(stale, ignore_errors=True)
+            except OSError:
+                continue
 
 
 configure_tls()
 if "__compiled__" in globals():
+    if sys.platform != "win32":
+        _onefile_cache_lock = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".in-use"), "a")
+        fcntl.flock(_onefile_cache_lock, fcntl.LOCK_SH)
     prune_stale_onefile_caches(os.path.dirname(os.path.abspath(__file__)))
 
 # https://stackoverflow.com/questions/12492810/python-how-can-i-make-the-ansi-escape-codes-to-work-also-in-windows
