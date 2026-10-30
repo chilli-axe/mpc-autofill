@@ -97,6 +97,31 @@ def get_default_brave_binary_location() -> str:
     return default_binary_locations[sys.platform]
 
 
+def _get_windows_file_version(binary_location: str) -> Optional[int]:
+    if sys.platform == "win32":
+        import ctypes
+
+        try:
+            version = ctypes.windll.version
+            size = version.GetFileVersionInfoSizeW(binary_location, None)
+            if not size:
+                return None
+            buffer = ctypes.create_string_buffer(size)
+            info = ctypes.POINTER(ctypes.c_uint32)()
+            length = ctypes.c_uint()
+            if not version.GetFileVersionInfoW(binary_location, 0, size, buffer):
+                return None
+            if (
+                version.VerQueryValueW(buffer, "\\", ctypes.byref(info), ctypes.byref(length))
+                and info
+                and length.value >= 12
+            ):
+                return info[2] >> 16 or None
+        except OSError:
+            pass
+    return None
+
+
 def _detect_chrome_version(binary_location: Optional[str] = None) -> Optional[int]:
     """
     Detect the selected Chromium browser version.
@@ -104,31 +129,21 @@ def _detect_chrome_version(binary_location: Optional[str] = None) -> Optional[in
     """
     try:
         if sys.platform == "darwin":
-            result = subprocess.run(
-                [binary_location or "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "--version"],
-                capture_output=True,
-                text=True,
-                timeout=5,
-            )
+            cmd = [binary_location or "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "--version"]
         elif sys.platform == "win32":
+            if binary_location and "brave" not in binary_location.lower():
+                file_version = _get_windows_file_version(binary_location)
+                if file_version is not None:
+                    return file_version
             registry_key = (
                 r"HKEY_CURRENT_USER\Software\BraveSoftware\Brave-Browser\BLBeacon"
                 if binary_location and "brave" in binary_location.lower()
                 else r"HKEY_CURRENT_USER\Software\Google\Chrome\BLBeacon"
             )
-            result = subprocess.run(
-                ["reg", "query", registry_key, "/v", "version"],
-                capture_output=True,
-                text=True,
-                timeout=5,
-            )
+            cmd = ["reg", "query", registry_key, "/v", "version"]
         else:
-            result = subprocess.run(
-                [binary_location or "google-chrome", "--version"],
-                capture_output=True,
-                text=True,
-                timeout=5,
-            )
+            cmd = [binary_location or "google-chrome", "--version"]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
 
         # Extract version number from output (e.g., "Google Chrome 144.0.7559.110")
         match = re.search(r"(\d+)\.\d+\.\d+\.\d+", result.stdout)
@@ -160,8 +175,6 @@ def get_undetected_chrome_driver(
             )
 
     options = uc.ChromeOptions()
-    options.add_argument("--no-sandbox")
-    options.add_argument("--log-level=3")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.set_capability("goog:loggingPrefs", {"browser": "ALL"})

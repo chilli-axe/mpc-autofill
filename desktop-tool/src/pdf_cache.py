@@ -12,7 +12,11 @@ import attr
 
 from src.logging import logger
 from src.order import CardOrder
-from src.pdf_maker import get_export_directory
+
+
+def get_export_directory(order_name: Optional[str]) -> str:
+    basename = os.path.basename(str(order_name)) or "cards.xml"
+    return os.path.join("export", os.path.splitext(basename)[0])
 
 
 def _file_hash(path: Path) -> str:

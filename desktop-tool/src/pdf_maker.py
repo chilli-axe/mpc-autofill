@@ -20,6 +20,7 @@ from src.exc import ImageDownloadError
 from src.formatting import bold
 from src.logging import logger
 from src.order import CardOrder
+from src.pdf_cache import fingerprint_pdf_inputs, get_export_directory
 from src.processing import (
     DTC_CARD_HEIGHT_INCHES,
     DTC_CARD_WIDTH_INCHES,
@@ -36,11 +37,6 @@ MIN_GHOSTSCRIPT_VERSION = (10, 5)
 class PdfXConversionConfig:
     icc_profile_path: Optional[str] = None
     ghostscript_path: Optional[str] = None
-
-
-def get_export_directory(order_name: Optional[str]) -> str:
-    basename = os.path.basename(str(order_name)) or "cards.xml"
-    return os.path.join("export", os.path.splitext(basename)[0])
 
 
 def get_ghostscript_path(explicit_path: Optional[str] = None) -> Optional[str]:
@@ -166,14 +162,6 @@ def convert_pdf_to_pdfx(
     )
     os.close(fd)
 
-    with tempfile.NamedTemporaryFile("w", suffix=".ps", delete=False) as pdfx_definition_file:
-        pdfx_definition_file.write(
-            _generate_pdfx_definition(
-                title=os.path.splitext(os.path.basename(output_path))[0], icc_profile_path=config.icc_profile_path
-            )
-        )
-        pdfx_definition_path = pdfx_definition_file.name
-
     cmd = [
         gs_path,
         "-dBATCH",
@@ -192,7 +180,14 @@ def convert_pdf_to_pdfx(
     ]
     if config.icc_profile_path:
         cmd.append(f"-sOutputICCProfile={config.icc_profile_path}")
-    cmd += [pdfx_definition_path, source_path]
+    cmd += [
+        "-c",
+        _generate_pdfx_definition(
+            title=os.path.splitext(os.path.basename(output_path))[0], icc_profile_path=config.icc_profile_path
+        ),
+        "-f",
+        source_path,
+    ]
 
     logger.debug(f"Ghostscript command: {' '.join(cmd)}")
     try:
@@ -213,7 +208,6 @@ def convert_pdf_to_pdfx(
         os.replace(temporary_output_path, output_path)
         return True
     finally:
-        os.unlink(pdfx_definition_path)
         if os.path.exists(temporary_output_path):
             os.unlink(temporary_output_path)
 
@@ -223,8 +217,8 @@ class PdfExporter:
     order: CardOrder = attr.ib()
     state: str = attr.ib(init=False, default=States.initialising)
     pdf: FPDF = attr.ib(default=None)
-    card_width_in_inches: float = attr.ib(default=2.73)
-    card_height_in_inches: float = attr.ib(default=3.71)
+    card_width_in_inches: float = attr.ib(default=DTC_CARD_WIDTH_INCHES)
+    card_height_in_inches: float = attr.ib(default=DTC_CARD_HEIGHT_INCHES)
     file_num: int = attr.ib(default=1)
     number_of_cards_per_file: int = attr.ib(default=60)
     paths_by_slot: dict[int, tuple[str, str]] = attr.ib(default={})
@@ -325,16 +319,7 @@ class PdfExporter:
     def add_image(self, image_path: str) -> None:
         self.pdf.add_page()
         if self.export_mode == "drive_thru_cards" and self.image_post_processing_config:
-            image_bytes = self.processed_images.get(image_path)
-            if image_bytes is None:
-                with open(image_path, "rb") as f:
-                    raw_image = f.read()
-                processed_image = post_process_image(raw_image=raw_image, config=self.image_post_processing_config)
-                with BytesIO() as buffer:
-                    save_processed_image(processed_image, file_path=buffer, config=self.image_post_processing_config)
-                    image_bytes = buffer.getvalue()
-                # Process repeated cards once; fpdf deduplicates the encoded JPEG bytes.
-                self.processed_images[image_path] = image_bytes
+            image_bytes = self.processed_images[image_path]
         else:
             with open(image_path, "rb") as f:
                 image_bytes = f.read()
@@ -342,14 +327,13 @@ class PdfExporter:
             # This ensures refreshed image files are re-read when re-exporting PDFs.
         self.pdf.image(image_bytes, x=0, y=0, w=self.card_width_in_inches, h=self.card_height_in_inches)
 
-    def save_file(self) -> str:
+    def save_file(self) -> None:
         extra = ""
         if self.separate_faces:
             extra = f"{self.current_face}/"
         file_path = f"{self.save_path}{extra}{self.file_num}.pdf"
         self.pdf.output(file_path)
         self.saved_files.append(file_path)
-        return file_path
 
     def download_and_collect_images(self, post_processing_config: Optional[ImagePostProcessingConfig]) -> None:
         download_config = None if self.export_mode == "drive_thru_cards" else post_processing_config
@@ -381,18 +365,29 @@ class PdfExporter:
         if self.export_mode == "drive_thru_cards" and post_processing_config is not None:
             # Calculate exact pixel dimensions for the target DPI at DTC card size (2.73" x 3.71")
             post_processing_config.target_pixel_size = calculate_dtc_target_pixel_size(post_processing_config.max_dpi)
-            # Embed DPI metadata so PDF tools correctly interpret the image resolution
-            post_processing_config.embed_dpi_metadata = True
         self.image_post_processing_config = post_processing_config
         try:
             self.download_and_collect_images(post_processing_config=post_processing_config)
-            from src.pdf_cache import fingerprint_pdf_inputs
-
             profile = self.pdfx_config.icc_profile_path if self.pdfx_config else None
             try:
                 self.input_fingerprint = fingerprint_pdf_inputs(self.order, [profile] if profile else [])
             except OSError:
                 self.input_fingerprint = None
+            if self.export_mode == "drive_thru_cards" and post_processing_config:
+
+                def process_image(image_path: str) -> bytes:
+                    with open(image_path, "rb") as f:
+                        raw_image = f.read()
+                    processed_image = post_process_image(raw_image=raw_image, config=post_processing_config)
+                    with BytesIO() as buffer:
+                        save_processed_image(processed_image, file_path=buffer, config=post_processing_config)
+                        return buffer.getvalue()
+
+                image_paths = list(
+                    dict.fromkeys(path for slot in sorted(self.paths_by_slot) for path in self.paths_by_slot[slot])
+                )
+                with ThreadPoolExecutor(max_workers=THREADS) as pool:
+                    self.processed_images.update(zip(image_paths, pool.map(process_image, image_paths)))
             if self.separate_faces:
                 self.number_of_cards_per_file = 1
                 self.export_separate_faces()

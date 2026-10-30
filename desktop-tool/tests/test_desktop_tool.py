@@ -4,13 +4,14 @@ import inspect
 import logging
 import os
 import re
+import shutil
 import subprocess
 import sys
 import textwrap
 import time
 import zlib
 from concurrent.futures import ThreadPoolExecutor
-from contextlib import nullcontext
+from contextlib import contextmanager, nullcontext
 from io import BytesIO
 from itertools import groupby
 from pathlib import Path
@@ -103,6 +104,19 @@ def count_pdf_pages(file_path: str) -> int:
         return len(re.findall(rb"/Type\s*/Page\b", pdf_file.read()))
 
 
+def stub_failed_downloads(monkeypatch, order, all_fronts=False):
+    def download_fronts(*_args, **_kwargs):
+        for index, card in enumerate(order.fronts.cards_by_id.values()):
+            card.downloaded = not all_fronts and index != 0
+
+    def download_backs(*_args, **_kwargs):
+        for card in order.backs.cards_by_id.values():
+            card.downloaded = True
+
+    monkeypatch.setattr(order.fronts, "download_images", download_fronts)
+    monkeypatch.setattr(order.backs, "download_images", download_backs)
+
+
 # endregion
 
 # region Ghostscript
@@ -120,27 +134,35 @@ def test_get_ghostscript_version_reads_stdout(monkeypatch: pytest.MonkeyPatch) -
     assert get_ghostscript_version("gs") == "10.02.1"
 
 
-def test_ensure_ghostscript_available_prompts_until_found(monkeypatch: pytest.MonkeyPatch, input_enter) -> None:
+@pytest.mark.parametrize("platform", ["darwin", "linux"])
+def test_pdfx_conversion_without_ghostscript_preserves_source(monkeypatch, tmp_path, platform):
+    monkeypatch.setattr(src.pdf_maker.sys, "platform", platform)
+    monkeypatch.setattr(src.pdf_maker.shutil, "which", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(src.pdf_maker.os.path, "isfile", lambda _path: False)
+    source = tmp_path / "source.pdf"
+    source.write_bytes(b"source")
+    assert get_ghostscript_path() is None
+    assert not convert_pdf_to_pdfx(str(source), str(tmp_path / "output.pdf"), PdfXConversionConfig())
+    assert source.read_bytes() == b"source"
+    assert list(tmp_path.iterdir()) == [source]
+
+
+def test_ensure_ghostscript_available_prompts_until_found(fake_gs, input_enter) -> None:
     paths = [None, "/usr/local/bin/gs"]
     called = {"version": 0}
-
-    def fake_get_path():
-        return paths.pop(0)
 
     def fake_get_version(_path: str) -> str:
         called["version"] += 1
         return "10.08.0"
 
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_path", fake_get_path)
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", fake_get_version)
-    monkeypatch.setattr(autofill_cli.click, "confirm", lambda *_args, **_kwargs: False)
+    fake_gs(paths, version=fake_get_version, confirm=False)
 
     assert autofill_cli.ensure_ghostscript_available() == "/usr/local/bin/gs"
     assert called["version"] == 1
 
 
 def test_ensure_ghostscript_available_installs_official_release_on_windows(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, fake_gs
 ) -> None:
     paths = [None, "C:\\Program Files\\gs\\gswin64c.exe"]
     install_calls = []
@@ -155,9 +177,7 @@ def test_ensure_ghostscript_available_installs_official_release_on_windows(
         "w64.exe",
         (download_url, hashlib.sha256(installer).hexdigest()),
     )
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: paths.pop(0))
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.08.0")
-    monkeypatch.setattr(autofill_cli.click, "confirm", lambda *_args, **_kwargs: True)
+    fake_gs(paths)
     monkeypatch.setattr("builtins.input", lambda *_args, **_kwargs: "\n")
 
     def fake_urlopen(request, timeout):
@@ -182,7 +202,7 @@ def test_ensure_ghostscript_available_installs_official_release_on_windows(
 
 
 def test_ensure_ghostscript_available_installs_signed_package_on_macos(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, fake_gs
 ) -> None:
     paths = [None, "/usr/local/bin/gs"]
     installer = b"signed Ghostscript installer"
@@ -194,9 +214,7 @@ def test_ensure_ghostscript_available_installs_signed_package_on_macos(
         "GHOSTSCRIPT_MACOS_INSTALLER",
         (download_url, hashlib.sha256(installer).hexdigest()),
     )
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: paths.pop(0))
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.08.0")
-    monkeypatch.setattr(autofill_cli.click, "confirm", lambda *_args, **_kwargs: True)
+    fake_gs(paths)
     monkeypatch.setattr("urllib.request.urlopen", lambda *_args, **_kwargs: BytesIO(installer))
 
     def fake_run(cmd, check=False):
@@ -245,17 +263,6 @@ def test_pinned_ghostscript_installers_are_available(download_url: str) -> None:
         assert response.status == 200
 
 
-def test_get_ghostscript_path_finds_standard_windows_install(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    executable = tmp_path / "gs" / "gs10.07.1" / "bin" / "gswin64c.exe"
-    executable.parent.mkdir(parents=True)
-    executable.touch()
-    monkeypatch.setattr("src.pdf_maker.shutil.which", lambda _name, **_kwargs: None)
-    monkeypatch.setattr("src.pdf_maker.sys.platform", "win32")
-    monkeypatch.setenv("ProgramFiles", str(tmp_path))
-
-    assert get_ghostscript_path() == str(executable)
-
-
 def test_get_ghostscript_path_finds_standard_macos_install(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("src.pdf_maker.shutil.which", lambda _name, **_kwargs: None)
     monkeypatch.setattr("src.pdf_maker.sys.platform", "darwin")
@@ -264,16 +271,12 @@ def test_get_ghostscript_path_finds_standard_macos_install(monkeypatch: pytest.M
     assert get_ghostscript_path() == "/usr/local/bin/gs"
 
 
-def test_ensure_ghostscript_available_installs_with_apt_on_linux(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+def test_ensure_ghostscript_available_installs_with_apt_on_linux(monkeypatch: pytest.MonkeyPatch, fake_gs) -> None:
     paths = [None, "/usr/bin/gs"]
     install_calls = []
 
     monkeypatch.setattr(autofill_cli.sys, "platform", "linux", raising=False)
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: paths.pop(0))
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.08.0")
-    monkeypatch.setattr(autofill_cli.click, "confirm", lambda *_args, **_kwargs: True)
+    fake_gs(paths)
     monkeypatch.setattr("builtins.input", lambda *_args, **_kwargs: "\n")
     monkeypatch.setattr(
         autofill_cli.shutil,
@@ -293,7 +296,9 @@ def test_ensure_ghostscript_available_installs_with_apt_on_linux(
     assert install_calls == [["sudo", "apt", "install", "-y", "ghostscript"]]
 
 
-def test_ensure_ghostscript_available_asks_permission_before_installing(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_ensure_ghostscript_available_asks_permission_before_installing(
+    monkeypatch: pytest.MonkeyPatch, fake_gs
+) -> None:
     paths = [None, "/usr/local/bin/gs"]
     asked = {"message": None, "default": None}
 
@@ -302,9 +307,7 @@ def test_ensure_ghostscript_available_asks_permission_before_installing(monkeypa
         asked["default"] = default
         return True
 
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: paths.pop(0))
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.08.0")
-    monkeypatch.setattr(autofill_cli.click, "confirm", fake_confirm)
+    fake_gs(paths, confirm=fake_confirm)
     monkeypatch.setattr(autofill_cli, "_install_ghostscript", lambda: True)
 
     assert autofill_cli.ensure_ghostscript_available() == "/usr/local/bin/gs"
@@ -312,15 +315,10 @@ def test_ensure_ghostscript_available_asks_permission_before_installing(monkeypa
     assert asked["default"] is True
 
 
-def test_ensure_ghostscript_available_does_not_prompt_when_already_installed(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: "/usr/local/bin/gs")
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.08.0")
-    monkeypatch.setattr(
-        autofill_cli.click,
-        "confirm",
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("should not prompt")),
+def test_ensure_ghostscript_available_does_not_prompt_when_already_installed(fake_gs) -> None:
+    fake_gs(
+        ["/usr/local/bin/gs"],
+        confirm=lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("should not prompt")),
     )
 
     assert autofill_cli.ensure_ghostscript_available() == "/usr/local/bin/gs"
@@ -350,18 +348,87 @@ def test_get_undetected_chrome_driver_applies_user_profile_options(monkeypatch: 
     assert captured["version_main"] == 120
 
 
-def test_detect_chrome_version_uses_selected_brave_browser(monkeypatch: pytest.MonkeyPatch) -> None:
-    captured = {}
+@pytest.mark.parametrize(
+    ("binary", "file_version", "expected", "registry_key"),
+    [
+        (r"C:\Custom Chromium\chrome.exe", 157, 157, None),
+        (r"C:\Custom Chromium\chrome.exe", None, 150, r"HKEY_CURRENT_USER\Software\Google\Chrome\BLBeacon"),
+        (
+            r"C:\Program Files\BraveSoftware\brave.exe",
+            157,
+            150,
+            r"HKEY_CURRENT_USER\Software\BraveSoftware\Brave-Browser\BLBeacon",
+        ),
+        (None, 157, 150, r"HKEY_CURRENT_USER\Software\Google\Chrome\BLBeacon"),
+    ],
+)
+def test_detect_chrome_version_uses_windows_file_version_before_registry(
+    monkeypatch, binary, file_version, expected, registry_key
+):
+    file_calls = []
+    registry_calls = []
+
+    def get_file_version(path):
+        file_calls.append(path)
+        return file_version
 
     def fake_run(args, **kwargs):
-        captured["args"] = args
+        registry_calls.append(args)
         return SimpleNamespace(stdout="version REG_SZ 150.1.92.143")
 
     monkeypatch.setattr(webdrivers.sys, "platform", "win32")
+    monkeypatch.setattr(webdrivers, "_get_windows_file_version", get_file_version)
     monkeypatch.setattr(webdrivers.subprocess, "run", fake_run)
 
-    assert webdrivers._detect_chrome_version(r"C:\Program Files\BraveSoftware\brave.exe") == 150
-    assert r"BraveSoftware\Brave-Browser\BLBeacon" in captured["args"][2]
+    assert webdrivers._detect_chrome_version(binary) == expected
+    assert file_calls == ([binary] if binary and "brave" not in binary.lower() else [])
+    assert registry_calls == ([["reg", "query", registry_key, "/v", "version"]] if registry_key else [])
+
+
+@pytest.mark.skipif(
+    sys.platform != "win32" or not os.environ.get("CHROME_BINARY"), reason="Windows Chrome binary required"
+)
+def test_detect_chrome_version_matches_windows_executable_resource(monkeypatch):
+    binary = os.environ["CHROME_BINARY"]
+    quoted_binary = binary.replace("'", "''")
+    result = subprocess.run(
+        ["powershell", "-NoProfile", "-Command", f"(Get-Item -LiteralPath '{quoted_binary}').VersionInfo.FileVersion"],
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=30,
+    )
+    expected = int(result.stdout.strip().split(".")[0])
+    monkeypatch.setattr(webdrivers.subprocess, "run", lambda *_, **__: pytest.fail("Should not query the registry"))
+    assert webdrivers._detect_chrome_version(binary) == expected
+
+
+@pytest.mark.parametrize(
+    ("platform", "binary", "command"),
+    [
+        ("darwin", None, ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "--version"]),
+        ("darwin", "/Applications/Brave Browser", ["/Applications/Brave Browser", "--version"]),
+        ("linux", None, ["google-chrome", "--version"]),
+        ("linux", "/usr/bin/brave-browser", ["/usr/bin/brave-browser", "--version"]),
+        ("win32", None, ["reg", "query", r"HKEY_CURRENT_USER\Software\Google\Chrome\BLBeacon", "/v", "version"]),
+        (
+            "win32",
+            r"C:\BraveSoftware\brave.exe",
+            ["reg", "query", r"HKEY_CURRENT_USER\Software\BraveSoftware\Brave-Browser\BLBeacon", "/v", "version"],
+        ),
+    ],
+)
+def test_detect_chrome_version_builds_platform_command(monkeypatch, platform, binary, command):
+    calls = []
+
+    def run(args, **kwargs):
+        calls.append((args, kwargs))
+        return SimpleNamespace(stdout="Chrome 156.0.8078.73")
+
+    monkeypatch.setattr(webdrivers.sys, "platform", platform)
+    monkeypatch.setattr(webdrivers.subprocess, "run", run)
+    assert webdrivers._detect_chrome_version(binary) == 156
+    assert calls == [(command, {"capture_output": True, "text": True, "timeout": 5})]
 
 
 def test_get_undetected_chrome_driver_reports_missing_chrome(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -379,18 +446,6 @@ def test_standard_driver_factories_accept_only_upstream_kwargs(browser: constant
     assert set(factory_parameters.keys()) == {"headless", "binary_location"}
 
 
-def test_cli_help_includes_download_images_only_option() -> None:
-    result = CliRunner().invoke(autofill_cli.main, ["--help"])
-    assert result.exit_code == 0
-    assert "--download-images-only" in result.output
-
-
-def test_cli_help_includes_global_log_level_option() -> None:
-    result = CliRunner().invoke(autofill_cli.main, ["--help"])
-    assert result.exit_code == 0
-    assert "--log-level" in result.output
-
-
 def test_cli_help_documents_new_flags() -> None:
     result = CliRunner().invoke(autofill_cli.main, ["--help"])
     assert result.exit_code == 0
@@ -401,6 +456,9 @@ def test_cli_help_documents_new_flags() -> None:
     assert "--browser-profile-name" in result.output
     assert "--skip-dtc-instructions" in result.output
     assert "detailed Selenium step-by-step logs" in result.output
+    assert "--log-level" in result.output
+    site_line = next(line for line in result.output.splitlines() if line.strip().startswith("--site ["))
+    assert site_line.lower().endswith("drivethrucards]")
 
 
 def test_configure_tls_uses_bundled_certificates_without_overwriting_user_value(
@@ -423,7 +481,7 @@ def test_startup_defers_heavy_runtime_imports() -> None:
             "-c",
             (
                 "import sys, autofill; "
-                "heavy=('undetected_chromedriver','fpdf','selenium','googleapiclient','wakepy'); "
+                "heavy=('undetected_chromedriver','fpdf','selenium','googleapiclient','wakepy','InquirerPy'); "
                 "assert not [name for name in heavy if any(m == name or m.startswith(name + '.') for m in sys.modules)]"
             ),
         ],
@@ -470,7 +528,7 @@ def test_interactive_onboarding_uses_picker_and_skips_dtc_only_questions(
         prompts.append(kwargs)
         return Prompt()
 
-    monkeypatch.setattr(autofill_cli.inquirer, "rawlist", fake_rawlist)
+    monkeypatch.setattr("InquirerPy.inquirer.rawlist", fake_rawlist)
 
     assert autofill_cli.run_interactive_onboarding() == expected
     assert len(prompts) == prompt_count
@@ -514,16 +572,8 @@ def test_dtc_overridden_explicit_flags_are_explained_in_logs(
     assert "each DriveThruCards XML is always created as a separate product" in caplog.text
 
 
-def test_cli_site_choices_list_drivethrucards_last() -> None:
-    result = CliRunner().invoke(autofill_cli.main, ["--help"])
-    assert result.exit_code == 0
-    site_line = next(line for line in result.output.splitlines() if line.strip().startswith("--site ["))
-    assert site_line.lower().endswith("drivethrucards]")
-
-
-@pytest.mark.parametrize("pdfx_count", [1, 0, 2])
 def test_main_drive_thru_cards_exportpdf_requires_one_pdfx_without_browser_automation(
-    monkeypatch: pytest.MonkeyPatch, tmp_path, caplog, pdfx_count, input_enter
+    monkeypatch: pytest.MonkeyPatch, tmp_path, input_enter
 ) -> None:
     icc_path = tmp_path / "test.icc"
     icc_path.write_bytes(b"icc")
@@ -546,7 +596,7 @@ def test_main_drive_thru_cards_exportpdf_requires_one_pdfx_without_browser_autom
 
     def fake_get_dtc_pdf_paths_for_order(**kwargs):
         calls["pdf"].append(kwargs["order"].name)
-        return ["export/test_local/1.pdf"] + [f"export/test_local/{i + 1}_pdfx.pdf" for i in range(pdfx_count)]
+        return "export/test_local/1_pdfx.pdf"
 
     monkeypatch.setattr(autofill_cli, "get_dtc_pdf_paths_for_order", fake_get_dtc_pdf_paths_for_order)
     monkeypatch.setattr(autofill_cli, "wait_for_user_to_complete_order", lambda: calls.__setitem__("wait", 1))
@@ -578,7 +628,6 @@ def test_main_drive_thru_cards_exportpdf_requires_one_pdfx_without_browser_autom
     assert calls["wait"] == 0
     assert calls["driver"] == 0
     assert calls["validate_print_options"] is False
-    assert ("requires exactly one PDF/X-1a file" in caplog.text) is (pdfx_count != 1)
 
 
 @pytest.mark.parametrize(
@@ -605,6 +654,7 @@ def test_main_drive_thru_cards_processes_multiple_orders_in_one_session(
         "executed": [],
         "prompts": [],
         "servers": 0,
+        "server_alive": False,
         "starting_url": None,
         "events": [],
         "validate_print_options": None,
@@ -624,10 +674,11 @@ def test_main_drive_thru_cards_processes_multiple_orders_in_one_session(
     monkeypatch.setattr(
         autofill_cli,
         "get_dtc_pdf_paths_for_order",
-        lambda **kwargs: [f"export/{kwargs['order'].name}/1.pdf", f"export/{kwargs['order'].name}/1_pdfx.pdf"],
+        lambda **kwargs: f"export/{kwargs['order'].name}/1_pdfx.pdf",
     )
 
     def fake_input(message: str) -> str:
+        assert state["server_alive"] is (expected_server_count == 1)
         state["prompts"].append(message)
         if len(state["executed"]) != 2:
             raise AssertionError("DriveThruCards prompted before every selected order was processed")
@@ -640,6 +691,10 @@ def test_main_drive_thru_cards_processes_multiple_orders_in_one_session(
         def __init__(self, html_filename: str) -> None:
             assert html_filename == constants.DTC_POST_LAUNCH_HTML_FILENAME
             state["servers"] += 1
+            state["server_alive"] = True
+
+        def __del__(self) -> None:
+            state["server_alive"] = False
 
         def server_url(self) -> str:
             return "http://localhost:1234/"
@@ -656,6 +711,7 @@ def test_main_drive_thru_cards_processes_multiple_orders_in_one_session(
             state["events"].append("prepare")
 
         def execute_drive_thru_cards_order(self, order, pdf_path) -> None:
+            assert state["server_alive"] is (expected_server_count == 1)
             state["executed"].append((order.name, pdf_path))
             state["events"].append(order.name)
 
@@ -803,6 +859,9 @@ def test_convert_pdf_to_pdfx_writes_output_atomically(monkeypatch: pytest.Monkey
     def fake_run(cmd, capture_output=True, text=True):
         assert "-dPDFX=1" in cmd
         assert "-dPDFACompatibilityPolicy=2" in cmd
+        assert cmd[-4] == "-c"
+        assert "/OutputIntents" in cmd[-3]
+        assert cmd[-2:] == ["-f", str(source_path)]
         output_arg = next(arg for arg in cmd if arg.startswith("-sOutputFile="))
         Path(output_arg.split("=", 1)[1]).write_bytes(b"%PDF-1.3 (PDF/X-1a:2001) /OutputIntents")
         return SimpleNamespace(returncode=0, stdout="", stderr="")
@@ -907,22 +966,43 @@ def test_convert_pdf_to_pdfx_uses_only_supported_ghostscript_pdfx_mode(tmp_path)
     assert xmp.findtext(".//{http://ns.adobe.com/pdf/1.3/}Trapped") == "False"
 
 
-@requires_google_drive_credentials
-def test_pdf_exporter_appends_pdfx_on_success(monkeypatch: pytest.MonkeyPatch, card_order_valid) -> None:
-    def do_nothing(_):
-        return None
+@pytest.fixture
+def local_pdf_order(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    path = tmp_path / "card.png"
+    Image.new("RGB", (20, 30), "red").save(path)
+
+    def face(side):
+        card = CardImage(
+            drive_id=str(path),
+            file_path=str(path),
+            name=path.name,
+            source_type=SourceType.LOCAL_FILE,
+            slots={0, 1, 2},
+        )
+        return CardImageCollection(cards_by_id={card.drive_id: card}, num_slots=3, face=side)
+
+    return CardOrder(
+        name="test_order.xml",
+        details=Details(quantity=3),
+        fronts=face(constants.Faces.front),
+        backs=face(constants.Faces.back),
+    )
+
+
+def test_pdf_exporter_appends_pdfx_on_success(monkeypatch: pytest.MonkeyPatch, local_pdf_order) -> None:
+    logged_messages = []
 
     def fake_convert_pdf_to_pdfx(source_path: str, output_path: str, _config) -> bool:
-        with open(output_path, "wb") as f:
-            f.write(b"pdfx")
+        Path(output_path).write_bytes(b"pdfx")
         return True
 
-    monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", do_nothing)
+    monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", lambda _: None)
     monkeypatch.setattr("src.pdf_maker.convert_pdf_to_pdfx", fake_convert_pdf_to_pdfx)
+    monkeypatch.setattr("src.pdf_maker.logger.info", logged_messages.append)
 
-    card_order_valid.name = "test_order.xml"
     pdf_exporter = PdfExporter(
-        order=card_order_valid,
+        order=local_pdf_order,
         number_of_cards_per_file=1,
         pdfx_config=PdfXConversionConfig(icc_profile_path="dummy.icc"),
     )
@@ -937,65 +1017,23 @@ def test_pdf_exporter_appends_pdfx_on_success(monkeypatch: pytest.MonkeyPatch, c
         assert file_path in map(Path, generated_files)
         assert os.path.exists(file_path)
 
-    remove_files([path for path in generated_files if path.endswith(".pdf")])
-    remove_directories(["export/test_order", "export"])
+    progress_logs = [message for message in logged_messages if message.startswith("Converting PDF to PDF/X-1a")]
+    assert len(progress_logs) == 3
+    assert Path(progress_logs[0].rsplit(": ", 1)[1]) == Path("export/test_order/1.pdf")
 
 
-@requires_google_drive_credentials
-def test_pdf_exporter_skips_pdfx_on_failure(monkeypatch: pytest.MonkeyPatch, card_order_valid) -> None:
-    def do_nothing(_):
-        return None
-
-    monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", do_nothing)
+def test_pdf_exporter_skips_pdfx_on_failure(monkeypatch: pytest.MonkeyPatch, local_pdf_order) -> None:
+    monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", lambda _: None)
     monkeypatch.setattr("src.pdf_maker.convert_pdf_to_pdfx", lambda *_args, **_kwargs: False)
 
-    card_order_valid.name = "test_order.xml"
     pdf_exporter = PdfExporter(
-        order=card_order_valid,
+        order=local_pdf_order,
         number_of_cards_per_file=1,
         pdfx_config=PdfXConversionConfig(icc_profile_path="dummy.icc"),
     )
     generated_files = pdf_exporter.execute(post_processing_config=DEFAULT_POST_PROCESSING)
 
     assert not any(path.endswith("_pdfx.pdf") for path in generated_files)
-
-    remove_files([path for path in generated_files if path.endswith(".pdf")])
-    remove_directories(["export/test_order", "export"])
-
-
-@requires_google_drive_credentials
-def test_pdf_exporter_logs_pdfx_conversion_progress(monkeypatch: pytest.MonkeyPatch, card_order_valid) -> None:
-    logged_messages = []
-
-    def do_nothing(_):
-        return None
-
-    def fake_info(message: str):
-        logged_messages.append(message)
-
-    def fake_convert_pdf_to_pdfx(source_path: str, output_path: str, _config) -> bool:
-        with open(output_path, "wb") as f:
-            f.write(b"pdfx")
-        return True
-
-    monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", do_nothing)
-    monkeypatch.setattr("src.pdf_maker.convert_pdf_to_pdfx", fake_convert_pdf_to_pdfx)
-    monkeypatch.setattr("src.pdf_maker.logger.info", fake_info)
-
-    card_order_valid.name = "test_order.xml"
-    pdf_exporter = PdfExporter(
-        order=card_order_valid,
-        number_of_cards_per_file=1,
-        pdfx_config=PdfXConversionConfig(icc_profile_path="dummy.icc"),
-    )
-    generated_files = pdf_exporter.execute(post_processing_config=DEFAULT_POST_PROCESSING)
-
-    progress_logs = [message for message in logged_messages if message.startswith("Converting PDF to PDF/X-1a")]
-    assert len(progress_logs) == 3
-    assert Path(progress_logs[0].rsplit(": ", 1)[1]) == Path("export/test_order/1.pdf")
-
-    remove_files([path for path in generated_files if path.endswith(".pdf")])
-    remove_directories(["export/test_order", "export"])
 
 
 def test_pdf_exporter_add_image_uses_image_bytes(monkeypatch: pytest.MonkeyPatch, card_order_valid, tmp_path) -> None:
@@ -2406,16 +2444,7 @@ def test_pdf_export_complete_separate_faces(monkeypatch, card_order_valid):
 def test_pdf_export_stops_before_creating_pdf_when_an_image_download_fails(monkeypatch, card_order_valid):
     monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", lambda _self: None)
 
-    def download_fronts(*_args):
-        for index, card in enumerate(card_order_valid.fronts.cards_by_id.values()):
-            card.downloaded = index != 0
-
-    def download_backs(*_args):
-        for card in card_order_valid.backs.cards_by_id.values():
-            card.downloaded = True
-
-    monkeypatch.setattr(card_order_valid.fronts, "download_images", download_fronts)
-    monkeypatch.setattr(card_order_valid.backs, "download_images", download_backs)
+    stub_failed_downloads(monkeypatch, card_order_valid)
     exporter = PdfExporter(order=card_order_valid)
     monkeypatch.setattr(exporter, "export", lambda: pytest.fail("PDF export should not start"))
     manager_stop_calls = []
@@ -2429,11 +2458,20 @@ def test_pdf_export_stops_before_creating_pdf_when_an_image_download_fails(monke
     assert manager_stop_calls == [True]
 
 
-def test_pdf_export_drive_thru_cards_combines_actual_front_slots_into_one_file(monkeypatch, tmp_path):
+def test_pdf_export_drive_thru_cards_reuses_images_in_one_file(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
 
     for image_name, color in [("front_a.png", "red"), ("front_b.png", "blue"), ("back.png", "black")]:
         Image.new("RGB", (300, 420), color).save(tmp_path / image_name)
+
+    process_calls: list[None] = []
+    real_post_process_image = src.pdf_maker.post_process_image
+
+    def counting_post_process_image(raw_image, config):
+        process_calls.append(None)
+        return real_post_process_image(raw_image=raw_image, config=config)
+
+    monkeypatch.setattr("src.pdf_maker.post_process_image", counting_post_process_image)
 
     order = CardOrder.from_element(
         working_directory=str(tmp_path),
@@ -2482,68 +2520,10 @@ def test_pdf_export_drive_thru_cards_combines_actual_front_slots_into_one_file(m
     assert count_pdf_pages("export/test_local/1.pdf") == 4
     # progress bars are frozen into scrollback once the export completes
     assert manager_stop_calls == [True]
-
-
-def test_pdf_export_drive_thru_cards_processes_and_embeds_repeated_images_once(monkeypatch, tmp_path):
-    monkeypatch.chdir(tmp_path)
-
-    for image_name, color in [("front_a.png", "red"), ("front_b.png", "blue"), ("back.png", "black")]:
-        Image.new("RGB", (300, 420), color).save(tmp_path / image_name)
-
-    process_calls: list[None] = []
-    real_post_process_image = src.pdf_maker.post_process_image
-
-    def counting_post_process_image(raw_image, config):
-        process_calls.append(None)
-        return real_post_process_image(raw_image=raw_image, config=config)
-
-    monkeypatch.setattr("src.pdf_maker.post_process_image", counting_post_process_image)
-
-    order = CardOrder.from_element(
-        working_directory=str(tmp_path),
-        element=ElementTree.fromstring(textwrap.dedent(f"""
-                <order>
-                    <details>
-                        <quantity>1</quantity>
-                        <stock>(S30) Standard Smooth</stock>
-                        <foil>false</foil>
-                    </details>
-                    <fronts>
-                        <card>
-                            <id>{tmp_path / "front_a.png"}</id>
-                            <sourceType>{SourceType.LOCAL_FILE}</sourceType>
-                            <slots>0</slots>
-                            <name>front_a.png</name>
-                        </card>
-                        <card>
-                            <id>{tmp_path / "front_b.png"}</id>
-                            <sourceType>{SourceType.LOCAL_FILE}</sourceType>
-                            <slots>1</slots>
-                            <name>front_b.png</name>
-                        </card>
-                    </fronts>
-                    <backs></backs>
-                    <cardback>{tmp_path / "back.png"}</cardback>
-                </order>
-                """)),
-        allowed_to_exceed_project_max_size=True,
-    )
-    order.name = "test_dedup.xml"
-
-    exporter = PdfExporter(order=order, export_mode="drive_thru_cards")
-    exporter.execute(
-        post_processing_config=ImagePostProcessingConfig(
-            max_dpi=300,
-            downscale_alg=constants.ImageResizeMethods.LANCZOS,
-            output_format="JPEG",
-        )
-    )
-
     # 4 pages (back, front_a, back, front_b) but only 3 unique images: the shared
     # cardback must be post-processed once and its JPEG data embedded once.
-    assert count_pdf_pages("export/test_dedup/1.pdf") == 4
     assert len(process_calls) == 3
-    with open("export/test_dedup/1.pdf", "rb") as f:
+    with open("export/test_local/1.pdf", "rb") as f:
         assert f.read().count(b"DCTDecode") == 3
     # The processed-image cache is cleared after execute().
     assert exporter.processed_images == {}
@@ -2656,16 +2636,7 @@ def test_execute_order_stops_before_upload_when_downloads_fail(monkeypatch, card
     driver = AutofillDriver(target_site=constants.TargetSites.MakePlayingCards)
     driver.initialise_bars()
 
-    def fail_fronts(**_kwargs):
-        for index, card in enumerate(card_order_valid.fronts.cards_by_id.values()):
-            card.downloaded = index != 0
-
-    def download_backs(**_kwargs):
-        for card in card_order_valid.backs.cards_by_id.values():
-            card.downloaded = True
-
-    monkeypatch.setattr(card_order_valid.fronts, "download_images", fail_fronts)
-    monkeypatch.setattr(card_order_valid.backs, "download_images", download_backs)
+    stub_failed_downloads(monkeypatch, card_order_valid)
     monkeypatch.setattr(driver, "initialise_order", lambda **_kwargs: pytest.fail("upload must not start"))
 
     with pytest.raises(ImageDownloadError, match="stopped before creating your order"):
@@ -2681,7 +2652,8 @@ def test_prune_stale_onefile_caches_removes_only_sibling_build_dirs(tmp_path):
     cache_root = tmp_path / "mpc-autofill"
     current = cache_root / "bwsinger-mpc-autofill-build2-1.2.5"
     stale = cache_root / "bwsinger-mpc-autofill-build1-1.2.5"
-    for directory in (current, stale):
+    interrupted = cache_root / "x.stale-123"
+    for directory in (current, stale, interrupted):
         directory.mkdir(parents=True)
         (directory / "autofill.bin").touch()
     (cache_root / "unrelated-file.txt").touch()
@@ -2690,6 +2662,7 @@ def test_prune_stale_onefile_caches_removes_only_sibling_build_dirs(tmp_path):
 
     assert current.exists()
     assert not stale.exists()
+    assert not interrupted.exists()
     assert (cache_root / "unrelated-file.txt").exists()
 
     # refuses to delete anything when not inside an mpc-autofill cache directory
@@ -2699,6 +2672,99 @@ def test_prune_stale_onefile_caches_removes_only_sibling_build_dirs(tmp_path):
     other_sibling.mkdir(parents=True)
     autofill_cli.prune_stale_onefile_caches(str(other))
     assert other_sibling.exists()
+
+
+@contextmanager
+def running_cache_process(executable, directory, code):
+    ready = directory / "ready"
+    script = "import sys\nfrom pathlib import Path\n" + code + "\nPath(sys.argv[1]).touch()\nsys.stdin.read()\n"
+    with subprocess.Popen([str(executable), "-c", script, str(ready)], stdin=subprocess.PIPE) as process:
+        try:
+            deadline = time.monotonic() + 10
+            while not ready.exists():
+                assert process.poll() is None, "Cache process exited before becoming ready"
+                assert time.monotonic() < deadline, "Cache process did not become ready"
+                time.sleep(0.01)
+            yield
+        finally:
+            try:
+                process.communicate(timeout=10)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=10)
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="POSIX file locks")
+def test_prune_stale_onefile_caches_preserves_locked_build(tmp_path):
+    current = tmp_path / "mpc-autofill" / "current"
+    sibling = current.parent / "running"
+    current.mkdir(parents=True)
+    sibling.mkdir()
+    marker = sibling / "marker"
+    marker.touch()
+    code = "import fcntl\nlock = open(Path(sys.argv[1]).parent / '.in-use', 'a')\nfcntl.flock(lock, fcntl.LOCK_SH)"
+
+    with running_cache_process(sys.executable, sibling, code):
+        autofill_cli.prune_stale_onefile_caches(str(current))
+        assert marker.exists()
+        assert current.exists()
+
+    autofill_cli.prune_stale_onefile_caches(str(current))
+    assert not sibling.exists()
+    assert current.exists()
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows open-file and executable locks")
+def test_prune_stale_onefile_caches_preserves_windows_running_builds(tmp_path):
+    current = tmp_path / "mpc-autofill" / "current"
+    open_file = current.parent / "open-file"
+    executable = current.parent / "executable"
+    for directory in (current, open_file, executable):
+        directory.mkdir(parents=True)
+        (directory / "marker").touch()
+    copied_python = executable / "python.exe"
+    shutil.copy2(sys.executable, copied_python)
+    venv_config = Path(sys.prefix) / "pyvenv.cfg"
+    if venv_config.exists():
+        shutil.copy2(venv_config, executable / "pyvenv.cfg")
+    code = "held = open(Path(sys.argv[1]).parent / 'held', 'w')"
+    # A running executable alone does not block the rename, so mirror the app's open .in-use file.
+    in_use = "held = open(Path(sys.argv[1]).parent / '.in-use', 'a')"
+
+    with (
+        running_cache_process(sys.executable, open_file, code),
+        running_cache_process(copied_python, executable, in_use),
+    ):
+        autofill_cli.prune_stale_onefile_caches(str(current))
+        for directory in (current, open_file, executable):
+            assert (directory / "marker").exists()
+        assert (open_file / "held").exists()
+        assert copied_python.exists()
+
+    autofill_cli.prune_stale_onefile_caches(str(current))
+    assert not open_file.exists()
+    assert not executable.exists()
+    assert (current / "marker").exists()
+
+
+def test_prune_stale_onefile_caches_continues_after_rename_error(tmp_path, monkeypatch):
+    current = tmp_path / "mpc-autofill" / "current"
+    blocked = current.parent / "blocked"
+    stale = current.parent / "stale"
+    for directory in (current, blocked, stale):
+        directory.mkdir(parents=True)
+    rename = os.rename
+
+    def fail_for_blocked(source, destination):
+        if source == str(blocked):
+            raise OSError("in use")
+        rename(source, destination)
+
+    monkeypatch.setattr(autofill_cli.os, "rename", fail_for_blocked)
+    autofill_cli.prune_stale_onefile_caches(str(current))
+    assert current.exists()
+    assert blocked.exists()
+    assert not stale.exists()
 
 
 def test_console_filter_hides_file_only_records():
@@ -2718,16 +2784,7 @@ def test_console_filter_hides_file_only_records():
 
 
 def test_download_images_only_raises_summary_when_downloads_fail(monkeypatch, card_order_valid):
-    def fail_fronts(*_args, **_kwargs):
-        for card in card_order_valid.fronts.cards_by_id.values():
-            card.downloaded = False
-
-    def download_backs(*_args, **_kwargs):
-        for card in card_order_valid.backs.cards_by_id.values():
-            card.downloaded = True
-
-    monkeypatch.setattr(card_order_valid.fronts, "download_images", fail_fronts)
-    monkeypatch.setattr(card_order_valid.backs, "download_images", download_backs)
+    stub_failed_downloads(monkeypatch, card_order_valid, all_fronts=True)
 
     with pytest.raises(ImageDownloadError, match="stopped before creating your order"):
         autofill_cli.download_images_for_orders(orders=[card_order_valid], post_processing_config=None)

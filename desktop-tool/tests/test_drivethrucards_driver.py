@@ -1,3 +1,5 @@
+import logging
+import os
 import time
 from types import SimpleNamespace
 
@@ -48,6 +50,8 @@ def test_execute_drive_thru_cards_order_runs_expected_sequence(dtc_driver: Autof
     dtc_driver.open_dtc_upload_page = lambda: calls.append(("open_dtc_upload_page",))
     dtc_driver.select_card_type_and_upload_pdf = lambda pdf_path: calls.append(("upload_pdf", pdf_path))
 
+    dtc_driver.complete_dtc_product_setup = lambda: calls.append(("complete_dtc_product_setup",))
+
     order = SimpleNamespace(name="My Order")
     dtc_driver.execute_drive_thru_cards_order(order=order, pdf_path="/tmp/order.pdf")
 
@@ -57,6 +61,7 @@ def test_execute_drive_thru_cards_order_runs_expected_sequence(dtc_driver: Autof
         ("submit_dtc_description_page",),
         ("open_dtc_upload_page",),
         ("upload_pdf", "/tmp/order.pdf"),
+        ("complete_dtc_product_setup",),
     ]
     assert states[-1] == (States.finished, "Product setup complete")
 
@@ -73,11 +78,13 @@ def test_authenticate_dtc_returns_immediately_when_already_logged_in(dtc_driver:
 
 def test_capture_dtc_publisher_name_preserves_email_local_part(dtc_driver: AutofillDriver) -> None:
     email_input = SimpleNamespace(get_attribute=lambda name: "bradley.smith-42@example.com")
-    dtc_driver.driver = SimpleNamespace(find_elements=lambda by, selector: [email_input])
+    waits = []
+    dtc_driver.driver = SimpleNamespace(find_elements=lambda by, selector: [email_input], implicitly_wait=waits.append)
 
     dtc_driver._capture_dtc_publisher_name()
 
     assert dtc_driver.dtc_publisher_name == "bradley.smith-42"
+    assert waits == [0, 5]
 
 
 def test_authenticated_selector_matches_current_account_menu() -> None:
@@ -108,6 +115,10 @@ def test_publisher_ready_accepts_visible_publish_navigation(dtc_driver: Autofill
 def test_authenticate_dtc_opens_login_pane_then_waits(
     monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver
 ) -> None:
+    email_input = SimpleNamespace(get_attribute=lambda name: "bradley.smith-42@example.com")
+    dtc_driver.driver = SimpleNamespace(
+        find_elements=lambda by, selector: [email_input], implicitly_wait=lambda _seconds: None
+    )
     auth_checks = iter([False, False, True])
     dtc_driver.is_dtc_user_authenticated = lambda: next(auth_checks)
     dtc_driver._click_dtc_login_button = lambda: True
@@ -118,6 +129,7 @@ def test_authenticate_dtc_opens_login_pane_then_waits(
     monkeypatch.setattr(time, "sleep", lambda _seconds: None)
 
     assert dtc_driver.authenticate_dtc() is True
+    assert dtc_driver.dtc_publisher_name == "bradley.smith-42"
     assert polling_calls[0][0] == By.XPATH
     assert "Go to Log In" in polling_calls[0][1]
     assert polling_calls[0][2] == 15
@@ -128,9 +140,9 @@ def test_authenticate_dtc_returns_false_on_timeout(monkeypatch: pytest.MonkeyPat
     dtc_driver._click_dtc_login_button = lambda: False
     dtc_driver.click_element_polling = lambda *_args, **_kwargs: False
 
+    dtc_driver.driver = SimpleNamespace(find_elements=lambda *_args: [], implicitly_wait=lambda _seconds: None)
     time_values = iter([0.0, 301.0])
-    monkeypatch.setattr(time, "time", lambda: next(time_values))
-    monkeypatch.setattr(time, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(time, "monotonic", lambda: next(time_values))
 
     assert dtc_driver.authenticate_dtc() is False
 
@@ -161,6 +173,7 @@ def test_log_dtc_page_state_reports_load_and_blocking_without_url_query(
     monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver
 ) -> None:
     messages = []
+    monkeypatch.setattr("src.driver.logger.handlers", [logging.NullHandler(logging.DEBUG)])
     dtc_driver.driver = SimpleNamespace(
         current_url="https://example.com/setup?account_token=secret",
         title="Publisher setup",
@@ -179,6 +192,25 @@ def test_log_dtc_page_state_reports_load_and_blocking_without_url_query(
         "ready_state=complete, browser_errors=1, blocked_by_client=1"
     ]
     assert "secret" not in messages[0]
+
+
+def test_log_dtc_page_state_skips_browser_without_debug_handler(monkeypatch, dtc_driver):
+    class UnusedBrowser:
+        def __getattr__(self, name):
+            pytest.fail(f"Unexpected browser access: {name}")
+
+    monkeypatch.setattr("src.driver.logger.handlers", [logging.NullHandler(logging.INFO)])
+    dtc_driver.driver = UnusedBrowser()
+
+    dtc_driver._log_dtc_page_state("before setup")
+
+
+def test_run_dtc_step_logs_only_before_success(dtc_driver):
+    page_states = []
+    dtc_driver._log_dtc_page_state = page_states.append
+
+    assert dtc_driver._run_dtc_step("setup", lambda: "ready") == "ready"
+    assert page_states == ["before setup"]
 
 
 def test_initialise_driver_retries_when_initial_window_is_already_closed(
@@ -518,8 +550,10 @@ def test_select_card_type_and_upload_pdf_raises_when_euro_poker_option_is_missin
         dtc_driver.select_card_type_and_upload_pdf(pdf_path="/tmp/order.pdf")
 
 
+@pytest.mark.parametrize("absolute", [False, True])
+@pytest.mark.parametrize("filename", ["does-not-exist.pdf", "link/../does-not-exist.pdf"])
 def test_select_card_type_and_upload_pdf_raises_when_pdf_is_missing(
-    monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver, tmp_path
+    monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver, tmp_path, filename, absolute
 ) -> None:
     euro_poker_select = SimpleNamespace(
         options=[SimpleNamespace(text="Premium Euro Poker Card(s)")],
@@ -531,8 +565,11 @@ def test_select_card_type_and_upload_pdf_raises_when_pdf_is_missing(
     )
     monkeypatch.setattr("src.driver.Select", lambda _element: euro_poker_select)
 
-    with pytest.raises(Exception, match="PDF file not found"):
-        dtc_driver.select_card_type_and_upload_pdf(pdf_path=str(tmp_path / "does-not-exist.pdf"))
+    pdf_path = str(tmp_path / filename) if absolute else filename
+    with pytest.raises(Exception, match="PDF file not found") as error:
+        dtc_driver.select_card_type_and_upload_pdf(pdf_path=pdf_path)
+    expected_path = pdf_path if absolute else os.path.abspath(pdf_path)
+    assert str(error.value) == f"PDF file not found: {expected_path}"
 
 
 def test_initialise_bars_creates_only_status_bar_for_dtc(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -554,7 +591,9 @@ def test_initialise_bars_creates_only_status_bar_for_dtc(monkeypatch: pytest.Mon
 
 
 @pytest.mark.parametrize("unavailable_property", ["current_url", "title"])
-def test_step_preserves_original_failure_when_browser_diagnostics_fail(dtc_driver, unavailable_property):
+def test_step_preserves_original_failure_when_browser_diagnostics_fail(monkeypatch, dtc_driver, unavailable_property):
+    monkeypatch.setattr("src.driver.logger.handlers", [logging.NullHandler(logging.DEBUG)])
+
     class ClosedBrowser:
         def __getattr__(self, name):
             if name == unavailable_property:
@@ -570,3 +609,29 @@ def test_step_preserves_original_failure_when_browser_diagnostics_fail(dtc_drive
     with pytest.raises(Exception, match="step 'upload' failed: original upload failure") as error:
         dtc_driver._run_dtc_step("upload", upload)
     assert error.value.__cause__ is original
+
+
+@pytest.mark.parametrize("method", ["is_dtc_user_authenticated", "is_dtc_publisher_ready"])
+def test_account_visibility_errors_restore_wait_and_return_false(dtc_driver, method):
+    waits = []
+
+    def fail(*_args):
+        raise sl_exc.NoSuchWindowException("window closed")
+
+    dtc_driver.driver = SimpleNamespace(find_elements=fail, implicitly_wait=waits.append)
+    assert getattr(dtc_driver, method)() is False
+    assert waits[-1] == 5
+
+
+def test_initialise_driver_chains_last_failure(monkeypatch, dtc_driver):
+    errors = [sl_exc.WebDriverException(f"attempt {attempt}") for attempt in range(1, 4)]
+    failures = iter(errors)
+
+    def create_driver():
+        raise next(failures)
+
+    dtc_driver.create_driver = create_driver
+    monkeypatch.setattr("src.driver.time.sleep", lambda _seconds: None)
+    with pytest.raises(Exception, match="attempt 3") as error:
+        dtc_driver.initialise_driver()
+    assert error.value.__cause__ is errors[-1]

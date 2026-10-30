@@ -28,14 +28,15 @@ import os
 import shutil
 import subprocess
 import sys
-from contextlib import nullcontext
+from collections.abc import Callable
+from contextlib import nullcontext, suppress
 from copy import copy
 from typing import TYPE_CHECKING, Optional
+from uuid import uuid4
 
 import certifi
 import click
 from click.core import ParameterSource
-from InquirerPy import inquirer
 
 from src.build_info import RELEASE_REPOSITORY, VERSION
 from src.constants import (
@@ -48,7 +49,11 @@ from src.formatting import bold
 from src.logging import logger
 from src.update_check import check_for_updates
 
+if sys.platform != "win32":
+    import fcntl
+
 if TYPE_CHECKING:
+    from src.driver import AutofillDriver
     from src.order import CardOrder
     from src.pdf_maker import PdfXConversionConfig
     from src.processing import ImagePostProcessingConfig
@@ -72,12 +77,30 @@ def prune_stale_onefile_caches(extraction_directory: str) -> None:
     for entry in os.listdir(parent_directory):
         sibling = os.path.join(parent_directory, entry)
         if sibling != extraction_directory and os.path.isdir(sibling):
-            shutil.rmtree(sibling, ignore_errors=True)
+            stale = f"{sibling}.stale-{uuid4().hex}"
+            try:
+                if sys.platform == "win32":
+                    os.rename(sibling, stale)
+                else:
+                    # Older builds hold no lock and are still pruned as before.
+                    with open(os.path.join(sibling, ".in-use"), "a") as lock:
+                        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                        os.rename(sibling, stale)
+                shutil.rmtree(stale, ignore_errors=True)
+            except OSError:
+                continue
 
 
 configure_tls()
 if "__compiled__" in globals():
-    prune_stale_onefile_caches(os.path.dirname(os.path.abspath(__file__)))
+    _extraction_directory = os.path.dirname(os.path.abspath(__file__))
+    # Held open for the process lifetime so other builds' pruning skips this extraction:
+    # Windows refuses to rename a folder with an open file, and POSIX pruning checks the lock.
+    with suppress(OSError):
+        _onefile_cache_lock = open(os.path.join(_extraction_directory, ".in-use"), "a")
+        if sys.platform != "win32":
+            fcntl.flock(_onefile_cache_lock, fcntl.LOCK_SH)
+    prune_stale_onefile_caches(_extraction_directory)
 
 # https://stackoverflow.com/questions/12492810/python-how-can-i-make-the-ansi-escape-codes-to-work-also-in-windows
 if sys.platform == "win32":
@@ -89,20 +112,24 @@ DEFAULT_AUTO_SAVE = True
 DEFAULT_IMAGE_POST_PROCESSING = True
 TLS_CHECK_URL = "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json"
 GHOSTSCRIPT_DOWNLOAD_PAGE = "https://ghostscript.com/releases/gsdnld.html"
+GHOSTSCRIPT_MACOS_DOWNLOAD_PAGE = "https://pages.uoregon.edu/koch/"
 GHOSTSCRIPT_VERSION = "10.08.0"
 GHOSTSCRIPT_MACOS_VERSION = "10.07.1"
+GHOSTSCRIPT_RELEASE_TAG = f"gs{GHOSTSCRIPT_VERSION.replace('.', '')}"
 GHOSTSCRIPT_WINDOWS_INSTALLERS = {
     "w32.exe": (
-        "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10080/gs10080w32.exe",
+        f"https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/{GHOSTSCRIPT_RELEASE_TAG}/"
+        f"{GHOSTSCRIPT_RELEASE_TAG}w32.exe",
         "42f9e97ea2580bc24e2604cc03a2213bdba6094869dbe9f8ede50f8dd86b7463",
     ),
     "w64.exe": (
-        "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10080/gs10080w64.exe",
+        f"https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/{GHOSTSCRIPT_RELEASE_TAG}/"
+        f"{GHOSTSCRIPT_RELEASE_TAG}w64.exe",
         "52a91b8bf09298788d7a57b9206127026c23eacd75405f0a131e26dc381dce50",
     ),
 }
 GHOSTSCRIPT_MACOS_INSTALLER = (
-    "https://pages.uoregon.edu/koch/Ghostscript-10.07.1.pkg",
+    f"{GHOSTSCRIPT_MACOS_DOWNLOAD_PAGE}Ghostscript-{GHOSTSCRIPT_MACOS_VERSION}.pkg",
     "7ea1d591c186b9f6f3e1d9cfd4ab2ef8570c5bcfd19b54086e8e183ed5892061",
 )
 
@@ -124,6 +151,8 @@ def should_run_interactive_onboarding() -> bool:
 
 
 def run_interactive_onboarding() -> tuple[str, str, bool, bool]:
+    from InquirerPy import inquirer
+
     browser = inquirer.rawlist(
         message="Which web browser should the tool run on? (Press Enter if you're not sure.)",
         choices=get_browser_picker_choices(),
@@ -242,27 +271,25 @@ def _install_ghostscript_windows() -> bool:
         )
 
 
+def _run_ghostscript_installer(installer: Callable[[], bool], download_page: str) -> bool:
+    try:
+        if installer():
+            return True
+    except Exception as error:
+        logger.warning(f"Ghostscript installation failed: {error}")
+    logger.info(f"Please install Ghostscript from {download_page}.")
+    return False
+
+
 def _install_ghostscript() -> bool:
     """
     Attempt to install Ghostscript, logging failures and returning whether the installer succeeded.
     """
 
     if sys.platform.startswith("darwin"):
-        try:
-            if _install_ghostscript_macos():
-                return True
-        except Exception as error:
-            logger.warning(f"Ghostscript installation failed: {error}")
-        logger.info("Please install Ghostscript from https://pages.uoregon.edu/koch/.")
-        return False
+        return _run_ghostscript_installer(_install_ghostscript_macos, GHOSTSCRIPT_MACOS_DOWNLOAD_PAGE)
     elif sys.platform.startswith("win"):
-        try:
-            if _install_ghostscript_windows():
-                return True
-        except Exception as error:
-            logger.warning(f"Ghostscript installation failed: {error}")
-        logger.info(f"Please install Ghostscript from {GHOSTSCRIPT_DOWNLOAD_PAGE}.")
-        return False
+        return _run_ghostscript_installer(_install_ghostscript_windows, GHOSTSCRIPT_DOWNLOAD_PAGE)
     else:
         package_manager = next(
             (candidate for candidate in ["apt", "dnf", "yum"] if shutil.which(candidate) is not None), None
@@ -308,8 +335,8 @@ def ensure_ghostscript_available() -> str:
 
         logger.info(
             "Please install Ghostscript, then return here to continue.\n"
-            "macOS: https://pages.uoregon.edu/koch/\n"
-            "Windows: https://ghostscript.com/releases/gsdnld.html\n"
+            f"macOS: {GHOSTSCRIPT_MACOS_DOWNLOAD_PAGE}\n"
+            f"Windows: {GHOSTSCRIPT_DOWNLOAD_PAGE}\n"
             "Linux: use your package manager (e.g., apt install ghostscript)."
         )
         input("Press Enter to re-check for Ghostscript, or Ctrl+C to exit.")
@@ -383,11 +410,11 @@ def get_dtc_pdf_paths_for_order(
     resolved_icc_profile: Optional[str],
     downscale_alg: str,
     ghostscript_path: Optional[str] = None,
-) -> list[str]:
+) -> str:
     from src.pdf_maker import PdfXConversionConfig
     from src.processing import ImagePostProcessingConfig
 
-    return export_pdf_order(
+    paths = export_pdf_order(
         order=order,
         skip_pdf_if_exists=skip_pdf_if_exists,
         post_processing_config=ImagePostProcessingConfig(
@@ -395,6 +422,64 @@ def get_dtc_pdf_paths_for_order(
         ),
         pdfx_config=PdfXConversionConfig(icc_profile_path=resolved_icc_profile, ghostscript_path=ghostscript_path),
     )
+    return next(path for path in paths if path.endswith("_pdfx.pdf"))
+
+
+def run_drive_thru_cards(
+    driver_factory: Callable[[str], AutofillDriver],
+    working_directory: str,
+    dtc_icc_profile: Optional[str],
+    skip_pdf_if_exists: bool,
+    downscale_alg: str,
+    exportpdf: bool,
+    skip_dtc_instructions: bool,
+) -> None:
+    from src.icc import find_or_download_dtc_icc_profile
+    from src.order import CardOrder
+    from src.web_server import WebServer
+
+    ghostscript_path = ensure_ghostscript_available()
+    if dtc_icc_profile and not os.path.isfile(dtc_icc_profile):
+        raise Exception(f"DriveThruCards ICC profile path does not exist or is not a file: {bold(dtc_icc_profile)}")
+    resolved_icc_profile = dtc_icc_profile or find_or_download_dtc_icc_profile()
+    if resolved_icc_profile is None:
+        logger.warning(
+            "No ICC profile is available - Ghostscript's default CMYK conversion will be used "
+            "instead. Print colours may differ from previous orders."
+        )
+    else:
+        logger.info(f"DriveThruCards ICC profile: {bold(resolved_icc_profile)}")
+    orders = CardOrder.from_xmls_in_folder(
+        working_directory=working_directory,
+        validate_print_options=False,
+    )
+    dtc_driver: Optional[AutofillDriver] = None
+    dtc_web_server: Optional[WebServer] = None
+    for order in orders:
+        dtc_pdf_path = get_dtc_pdf_paths_for_order(
+            order=order,
+            skip_pdf_if_exists=skip_pdf_if_exists,
+            resolved_icc_profile=resolved_icc_profile,
+            downscale_alg=downscale_alg,
+            ghostscript_path=ghostscript_path,
+        )
+        if exportpdf:
+            continue
+        if dtc_driver is None:
+            starting_url = TargetSites.DriveThruCards.value.starting_url
+            if not skip_dtc_instructions:
+                logger.info("DriveThruCards setup will open in your browser. " "Follow the instructions there.")
+                dtc_web_server = WebServer(DTC_POST_LAUNCH_HTML_FILENAME)
+                starting_url = dtc_web_server.server_url()
+            dtc_driver = driver_factory(starting_url)
+            dtc_driver.prepare_drive_thru_cards_session()
+        dtc_driver.execute_drive_thru_cards_order(order=order, pdf_path=dtc_pdf_path)
+    if dtc_driver is not None:
+        logger.info(
+            "All DriveThruCards product setups are complete. "
+            "Please check that your cart contains every intended product before completing the purchase manually."
+        )
+        input(f"Complete your purchase in the browser, then press {bold('Enter')} to close this window.\n")
 
 
 @click.command(context_settings={"show_default": True})
@@ -629,7 +714,8 @@ def main(
         log_debug_to_file=write_debug_logs,
         stdout_log_level=logging.getLevelName(log_level),
     )
-    if TargetSites[site] == TargetSites.DriveThruCards:
+    target_site = TargetSites[site]
+    if target_site == TargetSites.DriveThruCards:
         explicit = click.get_current_context().get_parameter_source
         if not auto_save and explicit("auto_save") == ParameterSource.COMMANDLINE:
             logger.info("Ignoring --no-auto-save: DriveThruCards orders are always saved to your account.")
@@ -654,7 +740,6 @@ def main(
                 logger.warning("Sleep prevention is unavailable. Your system may sleep during this execution.")
             if image_post_processing:
                 logger.info("Images are being post-processed during this execution.")
-            target_site = TargetSites[site]
             post_processing_config = (
                 ImagePostProcessingConfig(max_dpi=max_dpi, downscale_alg=ImageResizeMethods[downscale_alg])
                 if image_post_processing
@@ -667,77 +752,33 @@ def main(
                 )
                 download_images_for_orders(orders=orders, post_processing_config=post_processing_config)
                 return
-            if target_site == TargetSites.DriveThruCards:
-                from src.driver import AutofillDriver
-                from src.icc import find_or_download_dtc_icc_profile
-                from src.web_server import WebServer
 
-                ghostscript_path = ensure_ghostscript_available()
-                if dtc_icc_profile and not os.path.isfile(dtc_icc_profile):
-                    raise Exception(
-                        f"DriveThruCards ICC profile path does not exist or is not a file: {bold(dtc_icc_profile)}"
-                    )
-                resolved_icc_profile = dtc_icc_profile or find_or_download_dtc_icc_profile()
-                if resolved_icc_profile is None:
-                    logger.warning(
-                        "No ICC profile is available - Ghostscript's default CMYK conversion will be used "
-                        "instead. Print colours may differ from previous orders."
-                    )
-                else:
-                    logger.info(f"DriveThruCards ICC profile: {bold(resolved_icc_profile)}")
-                orders = CardOrder.from_xmls_in_folder(
-                    working_directory=working_directory,
-                    validate_print_options=False,
+            def driver_factory(starting_url: str) -> AutofillDriver:
+                from src.driver import AutofillDriver
+
+                return AutofillDriver(
+                    browser=Browsers[browser],
+                    target_site=target_site,
+                    binary_location=binary_location,
+                    browser_profile_path=browser_profile_path,
+                    browser_profile_name=browser_profile_name if browser_profile_path else None,
+                    starting_url=starting_url,
                 )
-                dtc_driver: Optional[AutofillDriver] = None
-                dtc_web_server: Optional[WebServer] = None
-                for order in orders:
-                    pdf_paths = get_dtc_pdf_paths_for_order(
-                        order=order,
-                        skip_pdf_if_exists=skip_pdf_if_exists,
-                        resolved_icc_profile=resolved_icc_profile,
-                        downscale_alg=downscale_alg,
-                        ghostscript_path=ghostscript_path,
-                    )
-                    # Only use the Ghostscript PDF/X-1a output - no fallback
-                    dtc_pdf_paths = [path for path in pdf_paths if path.endswith("_pdfx.pdf")]
-                    if len(dtc_pdf_paths) != 1:
-                        raise Exception(
-                            "DriveThruCards requires exactly one PDF/X-1a file per order. "
-                            "Recreate the PDF export before uploading."
-                        )
-                    if exportpdf:
-                        continue
-                    dtc_pdf_path = dtc_pdf_paths[0]
-                    if dtc_driver is None:
-                        starting_url = target_site.value.starting_url
-                        if not skip_dtc_instructions:
-                            logger.info(
-                                "DriveThruCards setup will open in your browser. " "Follow the instructions there."
-                            )
-                            dtc_web_server = WebServer(DTC_POST_LAUNCH_HTML_FILENAME)
-                            starting_url = dtc_web_server.server_url()
-                        dtc_driver = AutofillDriver(
-                            browser=Browsers[browser],
-                            target_site=target_site,
-                            binary_location=binary_location,
-                            browser_profile_path=browser_profile_path,
-                            browser_profile_name=browser_profile_name if browser_profile_path else None,
-                            starting_url=starting_url,
-                        )
-                        dtc_driver.prepare_drive_thru_cards_session()
-                    dtc_driver.execute_drive_thru_cards_order(order=order, pdf_path=dtc_pdf_path)
-                if dtc_driver is not None:
-                    logger.info(
-                        "All DriveThruCards product setups are complete. "
-                        "Please check that your cart contains every intended product before completing the purchase manually."
-                    )
-                    input(f"Complete your purchase in the browser, then press {bold('Enter')} to close this window.\n")
+
+            if target_site == TargetSites.DriveThruCards:
+                run_drive_thru_cards(
+                    driver_factory=driver_factory,
+                    working_directory=working_directory,
+                    dtc_icc_profile=dtc_icc_profile,
+                    skip_pdf_if_exists=skip_pdf_if_exists,
+                    downscale_alg=downscale_alg,
+                    exportpdf=exportpdf,
+                    skip_dtc_instructions=skip_dtc_instructions,
+                )
             elif exportpdf:
                 order = CardOrder.from_xmls_in_folder(working_directory=working_directory)[0]
                 export_pdf_order(order, skip_pdf_if_exists, post_processing_config)
             else:
-                from src.driver import AutofillDriver
                 from src.web_server import WebServer
 
                 card_orders = aggregate_and_split_orders(
@@ -746,14 +787,7 @@ def main(
                     combine_orders=combine_orders,
                 )
                 web_server = WebServer()
-                autofill_driver = AutofillDriver(
-                    browser=Browsers[browser],
-                    target_site=target_site,
-                    binary_location=binary_location,
-                    browser_profile_path=browser_profile_path,
-                    browser_profile_name=browser_profile_name if browser_profile_path else None,
-                    starting_url=web_server.server_url(),
-                )
+                autofill_driver = driver_factory(web_server.server_url())
                 autofill_driver.execute_orders(
                     orders=card_orders,
                     auto_save_threshold=auto_save_threshold if auto_save else None,

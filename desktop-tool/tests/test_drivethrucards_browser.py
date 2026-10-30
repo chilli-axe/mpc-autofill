@@ -56,6 +56,7 @@ def upload_page(tmp_path):
         const mode = new URLSearchParams(location.search).get('mode');
         const button = document.getElementById('dropzoneButton');
         const status = document.getElementById('status_messages');
+        if (mode === 'delayed_status') status.remove();
         const fileInput = document.querySelector('[data-card-file]');
         document.getElementById('uploadfiles').dropzone = {hiddenFileInput: fileInput};
         fileInput.addEventListener('change', event => {
@@ -71,6 +72,8 @@ def upload_page(tmp_path):
                 return;
             }
             status.textContent = 'Card file ' + fileInput.files[0].name + ' successfully uploaded!';
+            if (mode === 'delayed_status') setTimeout(() => document.body.append(status), 700);
+            if (mode === 'continue_inactive') return;
             document.getElementById('continue_button').setAttribute('onclick',
                 "location.href='setup.html?mode=" + mode + "'");
         };
@@ -120,7 +123,18 @@ def upload_page(tmp_path):
         thread.join()
 
 
-@pytest.mark.parametrize("mode", ["accepted", "rejected", "server_rejected", "redirected", "authenticated_with_login"])
+@pytest.mark.parametrize(
+    "mode",
+    [
+        "accepted",
+        "rejected",
+        "server_rejected",
+        "redirected",
+        "authenticated_with_login",
+        "delayed_status",
+        "continue_inactive",
+    ],
+)
 def test_pdf_upload_respects_native_file_events_and_validation(browser, upload_page, monkeypatch, mode):
     monkeypatch.setattr(AutofillDriver, "__attrs_post_init__", lambda self: None)
     driver = AutofillDriver(target_site=TargetSites.DriveThruCards, driver=browser)
@@ -139,12 +153,18 @@ def test_pdf_upload_respects_native_file_events_and_validation(browser, upload_p
         with pytest.raises(Exception, match="upload was not confirmed"):
             driver.select_card_type_and_upload_pdf(str(pdf))
         assert browser.find_element("id", "continue_button").get_attribute("onclick") == "return false"
+    elif mode == "continue_inactive":
+        driver.select_card_type_and_upload_pdf(str(pdf))
+        with pytest.raises(Exception, match="continue button did not activate"):
+            driver.complete_dtc_product_setup()
     elif mode == "redirected":
+        driver.select_card_type_and_upload_pdf(str(pdf))
         with pytest.raises(Exception, match="requires sign-in before the cart handoff"):
-            driver.select_card_type_and_upload_pdf(str(pdf))
+            driver.complete_dtc_product_setup()
         assert browser.title == "Login fixture"
     else:
         driver.select_card_type_and_upload_pdf(str(pdf))
+        driver.complete_dtc_product_setup()
         assert browser.title == "Cart fixture"
     assert browser.execute_script("return sessionStorage.getItem('changes')") == "1"
     assert browser.execute_script("return sessionStorage.getItem('unrelatedChanges')") == "0"
@@ -177,3 +197,21 @@ def test_actual_dtc_browser_factory_with_temporary_profile(upload_page, tmp_path
         assert driver.execute_script("return document.readyState") == "complete"
     finally:
         driver.quit()
+
+
+@pytest.mark.parametrize(
+    ("html", "authenticated", "publisher_ready"),
+    [
+        ("<button data-cy='accountMenu' hidden>Account</button><a href='pub_tools.php' hidden>Tools</a>", False, False),
+        ("<button data-cy='accountMenu'>Account</button>", True, False),
+        ("<button>Log Off</button>", True, False),
+        ("<a href='pub_tools.php'>Tools</a>", True, True),
+        ("<button>Publisher Tools</button>", False, True),
+    ],
+)
+def test_account_and_publisher_visibility(browser, monkeypatch, html, authenticated, publisher_ready):
+    monkeypatch.setattr(AutofillDriver, "__attrs_post_init__", lambda self: None)
+    driver = AutofillDriver(target_site=TargetSites.DriveThruCards, driver=browser)
+    browser.get("data:text/html," + html)
+    assert driver.is_dtc_user_authenticated() is authenticated
+    assert driver.is_dtc_publisher_ready() is publisher_ready

@@ -1,4 +1,5 @@
 import datetime as dt
+import logging
 import os
 import re
 import textwrap
@@ -132,7 +133,7 @@ class AutofillDriver:
                 raise Exception(
                     f"An error occurred while attempting to configure the webdriver for your specified browser. "
                     f"Please make sure you have installed the browser & that it is up to date:\n\n{bold(e)}"
-                )
+                ) from e
 
     def initialise_bars(self) -> None:
         # set the total for upload/download bars to 0 here, then change the total according to each order
@@ -517,22 +518,26 @@ class AutofillDriver:
         # Timeout reached
         raise TimeoutError(f"DriveThruCards did not finish loading after {timeout_seconds} seconds.")
 
+    def _any_displayed(self, *locators: tuple[str, str]) -> bool:
+        with self.no_implicit_wait():
+            return any(
+                element.is_displayed()
+                for by, selector in locators
+                for element in self.driver.find_elements(by, selector)
+            )
+
     def is_dtc_publisher_ready(self) -> bool:
         """Return whether the publisher-only Publish navigation link is visible."""
         selectors = self.target_site.value.selectors
         try:
-            with self.no_implicit_wait():
-                publisher_links = self.driver.find_elements(
+            return self._any_displayed(
+                (By.CSS_SELECTOR, selectors.publisher_ready_selector),
+                (
                     By.XPATH,
                     "//*[self::a or self::button]"
                     "[normalize-space()='Publish' or normalize-space()='Publisher Tools']",
-                )
-                return any(
-                    element.is_displayed()
-                    for element in (
-                        self.driver.find_elements(By.CSS_SELECTOR, selectors.publisher_ready_selector) + publisher_links
-                    )
-                )
+                ),
+            )
         except Exception as exc:
             logger.debug(f"Error checking publisher status: {exc}")
             return False
@@ -541,26 +546,14 @@ class AutofillDriver:
         """Check for a basic signed-in account independently of publisher access."""
         selectors = self.target_site.value.selectors
         try:
-            with self.no_implicit_wait():
-                authenticated_elements = self.driver.find_elements(
-                    By.CSS_SELECTOR, selectors.authenticated_indicator_selector
-                )
-                if any(element.is_displayed() for element in authenticated_elements):
-                    return True
-
-                logout_elements = self.driver.find_elements(
+            return self._any_displayed(
+                (By.CSS_SELECTOR, selectors.authenticated_indicator_selector),
+                (
                     By.XPATH,
                     "//*[self::a or self::button][normalize-space()='Log Off' or normalize-space()='Log Out']",
-                )
-                if any(element.is_displayed() for element in logout_elements):
-                    return True
-
-                # The Publish link also proves the user is signed in, even if the
-                # newer account-navigation selectors change.
-                return any(
-                    element.is_displayed()
-                    for element in self.driver.find_elements(By.CSS_SELECTOR, selectors.publisher_ready_selector)
-                )
+                ),
+                (By.CSS_SELECTOR, selectors.publisher_ready_selector),
+            )
         except Exception as exc:
             logger.debug(f"Error checking auth status: {exc}")
             return False
@@ -615,15 +608,15 @@ class AutofillDriver:
         if self.dtc_publisher_name:
             return
         try:
-            email_inputs = self.driver.find_elements(
-                By.CSS_SELECTOR,
-                "input[type='email'], input[name='email'], input[name='email_address']",
-            )
+            with self.no_implicit_wait():
+                email_inputs = self.driver.find_elements(
+                    By.CSS_SELECTOR,
+                    "input[type='email'], input[name='email'], input[name='email_address']",
+                )
             for email_input in email_inputs:
                 local_part, separator, _domain = (email_input.get_attribute("value") or "").strip().partition("@")
-                publisher_name = local_part
-                if separator and publisher_name:
-                    self.dtc_publisher_name = publisher_name
+                if separator and local_part:
+                    self.dtc_publisher_name = local_part
                     return
         except Exception:
             pass
@@ -657,16 +650,21 @@ class AutofillDriver:
 
         # Wait for user to complete login (timeout after 5 minutes)
         timeout_seconds = 300
-        start_time = time.time()
-        while time.time() - start_time < timeout_seconds:
-            self._capture_dtc_publisher_name()
-            time.sleep(1)
-            if self.is_dtc_user_authenticated():
-                logger.info("Successfully logged in to DriveThruCards!")
-                return True
 
-        logger.warning(f"Login timeout after {timeout_seconds}s. " "Please ensure you're logged in before continuing.")
-        return False
+        def capture_name_and_check_authentication(_driver: WebDriver) -> bool:
+            self._capture_dtc_publisher_name()
+            return self.is_dtc_user_authenticated()
+
+        try:
+            WebDriverWait(self.driver, timeout_seconds, poll_frequency=0.5).until(capture_name_and_check_authentication)
+        except sl_exc.TimeoutException:
+            logger.warning(
+                f"Login timeout after {timeout_seconds}s. " "Please ensure you're logged in before continuing."
+            )
+            return False
+
+        logger.info("Successfully logged in to DriveThruCards!")
+        return True
 
     def open_dtc_starting_page(self) -> None:
         """Wait for the local instruction-page button, or open DriveThruCards directly."""
@@ -844,9 +842,7 @@ class AutofillDriver:
 
         # Wait for and select the Euro Poker card option from the dropdown.
         # Any missing required element below aborts the order - a partial upload must not report success.
-        WebDriverWait(self.driver, 15).until(presence_of_element_located((By.ID, "card_type_select")))
-        # Re-fetch the element to avoid stale reference after page/tab switch
-        select = Select(self.driver.find_element(By.ID, "card_type_select"))
+        select = Select(WebDriverWait(self.driver, 15).until(presence_of_element_located((By.ID, "card_type_select"))))
 
         # Find option containing "Euro Poker" (case-insensitive search)
         euro_poker_option_text = next(
@@ -857,7 +853,6 @@ class AutofillDriver:
         select.select_by_visible_text(euro_poker_option_text)
         logger.debug(f"Selected '{euro_poker_option_text}' from dropdown.")
 
-        # Convert PDF path to absolute if needed
         if not os.path.isabs(pdf_path):
             pdf_path = os.path.abspath(pdf_path)
 
@@ -885,16 +880,18 @@ class AutofillDriver:
 
         # Wait for upload to complete - look for success message
         try:
-            WebDriverWait(self.driver, 120).until(
+            upload_status = WebDriverWait(self.driver, 120).until(
                 lambda d: re.search(
                     r"\bcard file .+ successfully uploaded!",
-                    d.find_element(By.ID, "status_messages").text if d.find_elements(By.ID, "status_messages") else "",
+                    d.find_element(By.ID, "status_messages").text,
                     re.IGNORECASE,
                 )
             )
         except sl_exc.TimeoutException as exc:
             raise Exception("The PDF upload was not confirmed by DriveThruCards within 120 seconds.") from exc
-        logger.info("DriveThruCards upload status: %s", self.driver.find_element(By.ID, "status_messages").text)
+        logger.info("DriveThruCards upload status: %s", cast(re.Match[str], upload_status).string)
+
+    def complete_dtc_product_setup(self) -> None:
 
         # Wait for the continue button to become active.
         # The button starts with an onclick handler that shows an error and returns false.
@@ -925,19 +922,10 @@ class AutofillDriver:
         buy_now_link = WebDriverWait(self.driver, 30).until(
             element_to_be_clickable((By.CSS_SELECTOR, "a[href*='action=buy_now']"))
         )
-        buy_now_href = buy_now_link.get_attribute("href")
-        if buy_now_href:
-            self.driver.get(buy_now_href)
-            logger.debug("Navigated to 'buy now' page to start placing the order.")
-        else:
-            self.driver.execute_script("arguments[0].click();", buy_now_link)
-            logger.debug("Clicked 'buy now' link.")
+        self.driver.get(cast(str, buy_now_link.get_attribute("href")))
+        logger.debug("Navigated to 'buy now' page to start placing the order.")
 
-        with self.no_implicit_wait():
-            login_buttons = self.driver.find_elements(
-                By.CSS_SELECTOR, self.target_site.value.selectors.login_button_selector
-            )
-            login_visible = any(button.is_displayed() for button in login_buttons)
+        login_visible = self._any_displayed((By.CSS_SELECTOR, self.target_site.value.selectors.login_button_selector))
         if login_visible and not self.is_dtc_user_authenticated():
             raise Exception(
                 "DriveThruCards requires sign-in before the cart handoff. "
@@ -945,6 +933,8 @@ class AutofillDriver:
             )
 
     def _log_dtc_page_state(self, context: str) -> None:
+        if not any(handler.level <= logging.DEBUG for handler in logger.handlers):
+            return
         try:
             current_url = str(getattr(self.driver, "current_url", "unavailable"))
             parsed_url = urlsplit(current_url)
@@ -974,12 +964,10 @@ class AutofillDriver:
     def _run_dtc_step(self, step_name: str, func: Any, *args: Any, **kwargs: Any) -> Any:
         self._log_dtc_page_state(f"before {step_name}")
         try:
-            result = func(*args, **kwargs)
+            return func(*args, **kwargs)
         except Exception as exc:
             self._log_dtc_page_state(f"failed {step_name}")
             raise Exception(f"DriveThruCards step '{step_name}' failed: {exc}") from exc
-        self._log_dtc_page_state(f"after {step_name}")
-        return result
 
     def prepare_drive_thru_cards_session(self) -> None:
         self.set_state(States.defining_order, "Opening DriveThruCards")
@@ -1000,6 +988,7 @@ class AutofillDriver:
         self._run_dtc_step("submit_dtc_description_page", self.submit_dtc_description_page)
         self._run_dtc_step("open_dtc_upload_page", self.open_dtc_upload_page)
         self._run_dtc_step("select_card_type_and_upload_pdf", self.select_card_type_and_upload_pdf, pdf_path)
+        self._run_dtc_step("complete_dtc_product_setup", self.complete_dtc_product_setup)
 
         self.set_state(States.finished, "Product setup complete")
         log_hours_minutes_seconds_elapsed(t)

@@ -242,7 +242,8 @@ def test_transport_does_not_attach_netrc_credentials(monkeypatch, tmp_path):
 def test_update_offer_uses_trusted_url_and_only_stops_after_opening(monkeypatch, capsys, open_page, browser_result):
     release = {"tag_name": "dtc-v1.10.0", "draft": False, "prerelease": False, "html_url": "https://evil.test"}
     calls = mock_release(monkeypatch, release)
-    monkeypatch.setattr(click, "confirm", lambda _message, default: open_page)
+    defaults = []
+    monkeypatch.setattr(click, "confirm", lambda _message, default: defaults.append(default) or open_page)
     opened = []
 
     def browser(url):
@@ -255,6 +256,7 @@ def test_update_offer_uses_trusted_url_and_only_stops_after_opening(monkeypatch,
     assert update_check.check_for_updates(True) is (open_page and browser_result is True)
     url = "https://github.com/bwsinger/mpc-autofill/releases/tag/dtc-v1.10.0"
     assert opened == ([url] if open_page else [])
+    assert defaults == [True]
     request, timeout = calls[0]
     assert request.full_url == "https://api.github.com/repos/bwsinger/mpc-autofill/releases/latest"
     assert timeout == 3
