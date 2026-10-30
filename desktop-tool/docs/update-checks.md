@@ -2,8 +2,9 @@
 
 Configured release builds ask on their first interactive run whether to check GitHub for updates.
 The default is No. Choosing Yes checks the build's own repository for its latest stable release at each
-interactive startup. A newer version offers to open its GitHub release page; accepting stops the current
-run so you can download and replace the executable. Declining continues your order. Downloads and
+interactive startup. When a newer version exists, the tool offers to open its GitHub release page, with Yes
+as the default. Accepting stops the current run so you can download and replace the executable. Declining
+continues your order. Downloads and
 installation remain manual. Offline or rate-limited checks do not prevent normal use.
 
 Consent is stored outside the executable and its extraction cache, so installing a newer build from the

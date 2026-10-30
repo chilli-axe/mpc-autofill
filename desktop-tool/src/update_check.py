@@ -106,7 +106,7 @@ def check_for_updates(enabled: Optional[bool] = None) -> bool:
 
     release_url = f"https://github.com/{repository}/releases/tag/{tag}"
     click.echo(f"MPC Autofill {tag} is available (installed: {version}).\nDownload: {release_url}")
-    if interactive and click.confirm("Open the release page to download it and stop this run?", default=False):
+    if interactive and click.confirm("Open the release page to download it and stop this run?", default=True):
         try:
             if webbrowser.open(release_url):
                 return True
