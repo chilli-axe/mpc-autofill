@@ -1,4 +1,6 @@
 import datetime as dt
+import json
+from pathlib import Path
 
 import freezegun
 import pytest
@@ -19,6 +21,16 @@ from cardpicker.tests.factories import (
 )
 
 DEFAULT_DATE = dt.datetime(2023, 1, 1)
+
+
+def google_drive_credentials_available() -> bool:
+    # mirrors the path resolution in `cardpicker.sources.api`. fork PRs and local runs without
+    # credentials get a missing or unparseable client_secrets.json, so those tests must skip.
+    try:
+        with open(Path(__file__).parent.parent.parent / "client_secrets.json") as f:
+            return bool(json.load(f))
+    except (OSError, json.JSONDecodeError):
+        return False
 
 
 class TestAPI:
@@ -354,6 +366,10 @@ class TestAPI:
 # endregion
 
 
+@pytest.mark.skipif(
+    not google_drive_credentials_available(),
+    reason="Google Drive credentials (client_secrets.json) are not available",
+)
 class TestUpdateDatabase:
     # region tests
 
