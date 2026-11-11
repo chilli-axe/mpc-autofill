@@ -8,7 +8,14 @@ runs:
       with:
         python-version: 3.13
     - name: Install pre-commit
-      run: pip install pre-commit
+      run: pip install pre-commit==4.7.0
+      shell: bash
+    - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+      with:
+        version: "0.13.5"
+    - name: Install desktop Python alongside backend Python
+      working-directory: desktop-tool
+      run: uv python install
       shell: bash
     - name: Run pre-commit
       run: pre-commit run --all-files

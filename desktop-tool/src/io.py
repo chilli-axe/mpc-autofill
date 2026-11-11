@@ -7,14 +7,18 @@ from typing import Any, Optional
 
 import ratelimit
 import requests
+from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import Resource, build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload
-from oauth2client.service_account import ServiceAccountCredentials
 
 import src.constants as constants
-from src.logging import logger
-from src.processing import ImagePostProcessingConfig, post_process_image
+from src.logging import FILE_ONLY, logger
+from src.processing import (
+    ImagePostProcessingConfig,
+    post_process_image,
+    save_processed_image,
+)
 
 thread_local = threading.local()  # Should only be called once per thread
 
@@ -25,7 +29,7 @@ thread_local = threading.local()  # Should only be called once per thread
 def find_or_create_google_drive_service() -> Resource:
     if (service := getattr(thread_local, "google_drive_service", None)) is None:
         logger.debug("Getting Google Drive API credentials...")
-        creds = ServiceAccountCredentials.from_json_keyfile_name(
+        creds = Credentials.from_service_account_file(  # type: ignore[no-untyped-call]  # google-auth's factory is untyped.
             str(Path(os.path.abspath(__file__)).parent.parent / constants.SERVICE_ACC_FILENAME), scopes=constants.SCOPES
         )
         service = build("drive", "v3", credentials=creds, static_discovery=False, cache_discovery=False)
@@ -76,7 +80,7 @@ def safe_get_api_call(
             # validate contents of response
             if r_info.status_code == 200 and len(r_text) > 0:
                 return r_text
-        except (requests.exceptions.RequestException, TimeoutError):
+        except requests.exceptions.RequestException, TimeoutError:
             pass
 
         tries += 1
@@ -99,7 +103,7 @@ def safe_post_api_call(
                 and not any([bool(r_json[x]) is False for x in expected_keys])
             ):
                 return r_json
-        except (requests.exceptions.RequestException, TimeoutError):
+        except requests.exceptions.RequestException, TimeoutError:
             pass
 
         tries += 1
@@ -189,13 +193,17 @@ def download_google_drive_file(
             _, done = downloader.next_chunk()
         file_bytes = file.getvalue()
     except HttpError:
-        logger.exception(f"Encountered a HTTP error while downloading Google Drive image {drive_id}")
+        logger.exception(f"Encountered a HTTP error while downloading Google Drive image {drive_id}", extra=FILE_ONLY)
         return False
 
     if post_processing_config is not None:
         logger.debug(f"Post-processing {drive_id}...")
-        processed_image = post_process_image(raw_image=file_bytes, config=post_processing_config)
-        processed_image.save(file_path)
+        try:
+            processed_image = post_process_image(raw_image=file_bytes, config=post_processing_config)
+            save_processed_image(processed_image, file_path=file_path, config=post_processing_config)
+        except OSError:
+            logger.exception(f"Could not process downloaded Google Drive image {drive_id}", extra=FILE_ONLY)
+            return False
     else:
         # Save the bytes directly to disk - avoid reading in pillow in case any quality degradation occurs
         with open(file_path, "wb") as f:

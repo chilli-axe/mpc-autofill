@@ -1,0 +1,41 @@
+name: Set up locked desktop environment
+description: Install the desktop interpreter and one dependency group from its lock.
+inputs:
+  group:
+    description: Additional dependency group (dev or build).
+    default: dev
+  google-drive-api-key:
+    description: Optional service-account JSON; never printed.
+    default: ""
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+      with:
+        python-version-file: desktop-tool/.python-version
+    - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+      with:
+        version: "0.13.5"
+        enable-cache: true
+        cache-dependency-glob: desktop-tool/uv.lock
+    - name: Sync locked dependencies
+      shell: bash
+      working-directory: desktop-tool
+      env:
+        DESKTOP_GROUP: ${{ inputs.group }}
+      run: uv sync --locked --no-default-groups --group "$DESKTOP_GROUP"
+    - name: Write service-account credentials
+      if: inputs.google-drive-api-key != ''
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      env:
+        DESKTOP_SERVICE_ACCOUNT: ${{ inputs.google-drive-api-key }}
+      run: |
+        python - <<'PY'
+        import json, os
+        from pathlib import Path
+        credentials = json.loads(os.environ["DESKTOP_SERVICE_ACCOUNT"])
+        path = Path("desktop-tool/client_secrets.json")
+        path.write_text(json.dumps(credentials), encoding="utf-8")
+        path.chmod(0o600)
+        PY

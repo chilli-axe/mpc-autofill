@@ -3,11 +3,13 @@ repos:
     rev: "v0.0.257"
     hooks:
       - id: ruff
+        exclude: ^desktop-tool/
         args: [--fix, --exit-non-zero-on-fix]
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0
     hooks:
       - id: isort
+        exclude: ^desktop-tool/
         name: isort (python)
         args: ["--profile", "black"]
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -21,11 +23,15 @@ repos:
     rev: 22.8.0
     hooks:
       - id: black
+        exclude: ^desktop-tool/
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.7.0
     hooks:
       - id: mypy
-        args: [--config-file, mypy.ini, desktop-tool/, MPCAutofill/]
+        files: ^(MPCAutofill/|mypy\.ini$)
+        types: [file]
+        language_version: python3.13
+        args: [--config-file, mypy.ini, MPCAutofill/]
         additional_dependencies: [
             # typing
             "django-stubs[compatible-mypy]",
@@ -57,6 +63,30 @@ repos:
             "sentry-sdk~=1.30.0",
             "tqdm~=4.65",
           ]
+        pass_filenames: false
+  - repo: local
+    hooks:
+      - id: desktop-ruff
+        name: Desktop Ruff
+        language: system
+        entry: uv run --project desktop-tool --locked --group dev ruff check --config desktop-tool/pyproject.toml
+        files: ^desktop-tool/.*\.py$
+      - id: desktop-black
+        name: Desktop Black
+        language: system
+        entry: uv run --project desktop-tool --locked --group dev black --check
+        files: ^desktop-tool/.*\.py$
+      - id: desktop-isort
+        name: Desktop isort
+        language: system
+        entry: uv run --project desktop-tool --locked --group dev isort --check-only
+        files: ^desktop-tool/.*\.py$
+      - id: desktop-mypy
+        name: Desktop mypy
+        language: system
+        entry: uv run --project desktop-tool --locked --group dev mypy --config-file desktop-tool/pyproject.toml desktop-tool/autofill.py desktop-tool/src
+        files: ^desktop-tool/(.*\.py|pyproject\.toml|uv\.lock|\.python-version)$
+        types: [file]
         pass_filenames: false
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: "v2.7.1"

@@ -42,14 +42,14 @@ def alert_handler(func: F) -> F:
         try:
             alert = autofill_driver.driver.switch_to.alert
             alert.accept()
-        except (NoAlertPresentException, NoSuchWindowException):
+        except NoAlertPresentException, NoSuchWindowException:
             pass
         try:
             return func(*args, **kwargs)
         except UnexpectedAlertPresentException:
             alert = autofill_driver.driver.switch_to.alert
             alert.accept()
-        except (NoAlertPresentException, NoSuchWindowException):
+        except NoAlertPresentException, NoSuchWindowException:
             pass
         return None
 
