@@ -73,6 +73,9 @@
     },
     "canonicalArtist": {
       "$ref": "./CanonicalArtist.json"
+    },
+    "downloads": {
+      "$ref": "./DownloadCounts.json"
     }
   },
   "required": [

@@ -6,6 +6,7 @@ from .models import (
     CanonicalExpansion,
     Card,
     DFCPair,
+    DownloadCount,
     Project,
     ProjectMember,
     Source,
@@ -72,3 +73,9 @@ class AdminCanonicalExpansion(admin.ModelAdmin[CanonicalExpansion]):
 class AdminCanonicalCard(admin.ModelAdmin[CanonicalCard]):
     list_display = ("identifier", "name", "expansion", "collector_number", "is_default")
     search_fields = ("name",)
+
+
+@admin.register(DownloadCount)
+class AdminDownloadCount(admin.ModelAdmin[DownloadCount]):
+    list_display = ("date", "card", "count")
+    list_filter = ("date",)

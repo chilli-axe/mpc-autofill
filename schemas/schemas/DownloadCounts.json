@@ -1,0 +1,21 @@
+{
+  "title": "Download Counts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "today": {
+      "type": "integer"
+    },
+    "thisWeek": {
+      "type": "integer"
+    },
+    "thisMonth": {
+      "type": "integer"
+    },
+    "total": {
+      "type": "integer"
+    }
+  },
+  "required": ["today", "thisWeek", "thisMonth", "total"],
+  "additionalProperties": false
+}

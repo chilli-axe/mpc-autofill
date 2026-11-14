@@ -8,6 +8,10 @@
     "dateCreatedAscending",
     "dateCreatedDescending",
     "dateModifiedAscending",
-    "dateModifiedDescending"
+    "dateModifiedDescending",
+    "popularityTodayDescending",
+    "popularityWeekDescending",
+    "popularityMonthDescending",
+    "popularityAllTimeDescending"
   ]
 }

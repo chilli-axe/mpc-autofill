@@ -228,6 +228,7 @@ const SampleCardDocument: CardDocument = {
   mediumThumbnailUrl: "",
   language: "EN",
   tags: [],
+  downloads: { today: 0, thisWeek: 0, thisMonth: 0, total: 0 },
 };
 
 export function DynamicLogo() {

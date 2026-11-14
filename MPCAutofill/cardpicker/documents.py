@@ -1,8 +1,10 @@
+from datetime import date, timedelta
+
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 from elasticsearch_dsl import analyzer
 
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Sum
 
 from cardpicker.models import Card
 
@@ -27,6 +29,11 @@ class CardSearch(Document):
     expansion_code = fields.KeywordField(attr="get_expansion_code")
     collector_number = fields.KeywordField(attr="get_collector_number")
 
+    total_downloads = fields.IntegerField()
+    downloads_today = fields.IntegerField()
+    downloads_this_week = fields.IntegerField()
+    downloads_this_month = fields.IntegerField()
+
     class Index:
         # name of the elasticsearch index
         name = "cards"
@@ -40,3 +47,23 @@ class CardSearch(Document):
     def get_queryset(self) -> QuerySet[Card]:
         # https://django-elasticsearch-dsl.readthedocs.io/en/latest/fields.html#handle-relationship-with-nestedfield-objectfield
         return super().get_queryset().select_related("canonical_card", "canonical_card__expansion")
+
+    def prepare_total_downloads(self, instance: Card) -> int:
+        return instance.download_counts.aggregate(Sum("count"))["count__sum"] or 0
+
+    def prepare_downloads_today(self, instance: Card) -> int:
+        return instance.download_counts.filter(date=date.today()).aggregate(Sum("count"))["count__sum"] or 0
+
+    def prepare_downloads_this_week(self, instance: Card) -> int:
+        return (
+            instance.download_counts.filter(date__gte=date.today() - timedelta(days=7)).aggregate(Sum("count"))[
+                "count__sum"
+            ]
+            or 0
+        )
+
+    def prepare_downloads_this_month(self, instance: Card) -> int:
+        return (
+            instance.download_counts.filter(date__gte=date.today().replace(day=1)).aggregate(Sum("count"))["count__sum"]
+            or 0
+        )

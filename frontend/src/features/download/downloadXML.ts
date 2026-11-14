@@ -18,6 +18,7 @@ import { bracket } from "@/common/utils";
 import { useClientSearchContext } from "@/features/clientSearch/clientSearchContext";
 import { ClientSearchService } from "@/features/clientSearch/clientSearchService";
 import { downloadFile, useDoFileDownload } from "@/features/download/download";
+import { useRecordDownloadCounts } from "@/store/api";
 import { selectFinishSettings } from "@/store/slices/finishSettingsSlice";
 import {
   selectProjectMembers,
@@ -235,20 +236,34 @@ export function useDownloadXML() {
   const dispatch = useAppDispatch();
   const store = useAppStore();
   const doFileDownload = useDoFileDownload();
+  const recordDownloadCounts = useRecordDownloadCounts();
   const { clientSearchService } = useClientSearchContext();
   const directoryHandle = useLocalFilesDirectoryHandle();
-  return () =>
-    Promise.resolve(
+  return () => {
+    const state = store.getState();
+    const projectMembers = selectProjectMembers(state);
+    const identifiers = [
+      ...new Set(
+        projectMembers.flatMap((slot) =>
+          [slot.front?.selectedImage, slot.back?.selectedImage].filter(
+            (id): id is string => id != null
+          )
+        )
+      ),
+    ];
+    recordDownloadCounts(identifiers);
+    return Promise.resolve(
       doFileDownload(
         "xml",
         "cards.xml",
         (): Promise<boolean> =>
           downloadXML(
             dispatch,
-            store.getState(),
+            state,
             clientSearchService,
             directoryHandle?.name
           )
       )
     );
+  };
 }
