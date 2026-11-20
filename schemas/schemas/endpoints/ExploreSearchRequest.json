@@ -9,6 +9,12 @@
     "query": {
       "type": ["string", "null"]
     },
+    "artists": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
     "cardTypes": {
       "type": "array",
       "items": {

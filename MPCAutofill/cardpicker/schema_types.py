@@ -76,6 +76,21 @@ class Game(str, Enum):
     MTG = "MTG"
 
 
+class ArtistsResponse(BaseModel):
+    artists: List[str]
+
+    @staticmethod
+    def from_dict(obj: Any) -> "ArtistsResponse":
+        assert isinstance(obj, dict)
+        artists = from_list(from_str, obj.get("artists"))
+        return ArtistsResponse(artists)
+
+    def to_dict(self) -> dict:
+        result: dict = {}
+        result["artists"] = from_list(from_str, self.artists)
+        return result
+
+
 class FilterSettings(BaseModel):
     excludesTags: List[str]
     """The tags which the cards must *not* have to be included in search results"""
@@ -601,6 +616,7 @@ class ExploreSearchRequest(BaseModel):
     pageStart: int
     searchSettings: SearchSettings
     sortBy: SortBy
+    artists: Optional[List[str]] = None
     query: Optional[str] = None
 
     @staticmethod
@@ -611,8 +627,9 @@ class ExploreSearchRequest(BaseModel):
         pageStart = from_int(obj.get("pageStart"))
         searchSettings = SearchSettings.from_dict(obj.get("searchSettings"))
         sortBy = SortBy(obj.get("sortBy"))
+        artists = from_union([lambda x: from_list(from_str, x), from_none], obj.get("artists"))
         query = from_union([from_none, from_str], obj.get("query"))
-        return ExploreSearchRequest(cardTypes, pageSize, pageStart, searchSettings, sortBy, query)
+        return ExploreSearchRequest(cardTypes, pageSize, pageStart, searchSettings, sortBy, artists, query)
 
     def to_dict(self) -> dict:
         result: dict = {}
@@ -621,6 +638,8 @@ class ExploreSearchRequest(BaseModel):
         result["pageStart"] = from_int(self.pageStart)
         result["searchSettings"] = to_class(SearchSettings, self.searchSettings)
         result["sortBy"] = to_enum(SortBy, self.sortBy)
+        if self.artists is not None:
+            result["artists"] = from_union([lambda x: from_list(from_str, x), from_none], self.artists)
         result["query"] = from_union([from_none, from_str], self.query)
         return result
 
@@ -1318,6 +1337,14 @@ def Tagfromdict(s: Any) -> Tag:
 
 def Tagtodict(x: Tag) -> Any:
     return to_class(Tag, x)
+
+
+def ArtistsResponsefromdict(s: Any) -> ArtistsResponse:
+    return ArtistsResponse.from_dict(s)
+
+
+def ArtistsResponsetodict(x: ArtistsResponse) -> Any:
+    return to_class(ArtistsResponse, x)
 
 
 def CardbacksRequestfromdict(s: Any) -> CardbacksRequest:

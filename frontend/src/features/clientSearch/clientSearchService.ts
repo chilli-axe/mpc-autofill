@@ -248,7 +248,8 @@ export class ClientSearchService {
     cardTypes: Array<CardType>,
     searchSettings: SearchSettings,
     pageStart: number,
-    pageSize: number
+    pageSize: number,
+    artists?: Array<string>
   ): Promise<{ cards: Array<CardDocument>; count: number }> {
     if (this.worker === undefined) {
       throw new Error("clientSearchService was not initialised!");
@@ -259,7 +260,8 @@ export class ClientSearchService {
       cardTypes,
       searchSettings,
       pageStart,
-      pageSize
+      pageSize,
+      artists
     );
   }
 
