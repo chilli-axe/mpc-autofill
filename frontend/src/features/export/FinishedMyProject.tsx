@@ -29,6 +29,7 @@ import { selectIsProjectEmpty } from "@/store/slices/projectSlice";
 
 import { MobileStatus } from "../mobile/MobileStatus";
 import { PDFGenerator } from "../pdf/PDFGenerator";
+
 interface ExitModal {
   show: boolean;
   handleClose: {
@@ -317,7 +318,7 @@ export function FinishedMyProject() {
           <Tab.Pane eventKey="mpc">
             <MakePlayingCardsInstructions />
           </Tab.Pane>
-          <Tab.Pane eventKey="pdf">
+          <Tab.Pane eventKey="pdf" mountOnEnter>
             <PDFGenerator
               heightDelta={
                 NavPillButtonHeight + NavUnderlineButtonHeight + NavbarHeight
