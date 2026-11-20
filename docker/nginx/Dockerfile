@@ -15,7 +15,7 @@ fi
 RUN npm install
 RUN npx next build
 
-FROM nginx:1.21-alpine
+FROM nginx:1.31.9-alpine
 
 # Copy our static site files into the directory that the nginx docker container consumes files from
 COPY --from=builder /frontend/out /usr/share/nginx/html
