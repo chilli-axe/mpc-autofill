@@ -4,7 +4,7 @@ colorama~=0.4.6
 coverage~=7.2.7
 defusedxml~=0.7.1
 enlighten~=1.11.2
-fpdf2==2.8.2
+fpdf2==2.8.8
 google-api-python-client==2.95.0
 google-auth-httplib2==0.1.0
 google-auth-oauthlib==0.1.0
