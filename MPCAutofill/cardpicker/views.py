@@ -5,6 +5,8 @@ from random import sample
 from typing import Any, Callable, TypeVar, Union, cast
 
 import pycountry
+from elasticsearch.exceptions import TransportError as ElasticTransportError
+from elasticsearch_dsl import Search
 from elasticsearch_dsl.index import Index
 from pydantic import ValidationError
 
@@ -58,6 +60,7 @@ from cardpicker.schema_types import (
     TagsResponse,
 )
 from cardpicker.search.search_functions import (
+    FUZZY_FALLBACK_LEVELS,
     SearchExceptions,
     get_new_cards_paginator,
     get_search,
@@ -207,12 +210,29 @@ def post_explore_search(request: HttpRequest) -> HttpResponse:
         SortBy.dateModifiedDescending: {"date_modified": {"order": "desc"}, "searchq_keyword": {"order": "asc"}},
     }[explore_search_request.sortBy]
 
-    s = get_search(
-        search_settings=explore_search_request.searchSettings,
-        query=explore_search_request.query,
-        card_types=explore_search_request.cardTypes,
-    ).sort(sort)
+    def get_sorted_search(fallback_level: int) -> Search:
+        return get_search(
+            search_settings=explore_search_request.searchSettings,
+            query=explore_search_request.query,
+            card_types=explore_search_request.cardTypes,
+            fallback_level=fallback_level,
+        ).sort(sort)
+
+    s = get_sorted_search(fallback_level=0)
     count = s.extra(track_total_hits=True).count()
+    if count == 0 and explore_search_request.query:
+        # the escalation loop is duplicated from `retrieve_card_identifiers` because explore search needs
+        # elasticsearch-side sorting and pagination rather than a materialised list of identifiers
+        try:
+            for fallback_level in FUZZY_FALLBACK_LEVELS:
+                fallback_s = get_sorted_search(fallback_level=fallback_level)
+                fallback_count = fallback_s.extra(track_total_hits=True).count()
+                if fallback_count > 0:
+                    s, count = fallback_s, fallback_count
+                    break
+        except ElasticTransportError:
+            # the fallback is best-effort: surface the primary search's (empty) results rather than an error
+            pass
 
     s_sliced = s[explore_search_request.pageStart : explore_search_request.pageStart + explore_search_request.pageSize]
     card_ids = [man.identifier for man in s_sliced.execute()]

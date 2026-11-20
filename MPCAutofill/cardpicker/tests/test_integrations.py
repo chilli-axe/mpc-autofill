@@ -107,6 +107,8 @@ class TestMTGIntegration:
 
     @pytest.mark.parametrize("url", [item.value for item in Decks], ids=[item.name.lower() for item in Decks])
     def test_valid_url(self, client, django_settings, snapshot, url: str):
+        if "moxfield" in url and not conf_settings.MOXFIELD_SECRET:
+            pytest.skip("MOXFIELD_SECRET is not configured (e.g. fork PRs and environments without credentials)")
         decklist = MTGIntegration.query_import_site(url)
         assert decklist
         assert Counter(decklist.splitlines()) == snapshot

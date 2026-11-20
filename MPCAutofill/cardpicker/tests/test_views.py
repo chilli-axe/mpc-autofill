@@ -205,6 +205,84 @@ class TestPostEditorSearchResults:
             Cards.PAST_IN_FLAMES_2.value.identifier,
         ]
 
+    def test_precise_search_with_typo_falls_back_to_fuzzy(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_editor_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "queries": {"key1": {"query": "brainstrom", "cardType": "CARD"}},
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"]["key1"] == [Cards.BRAINSTORM.value.identifier]
+
+    def test_fuzzy_search_with_typo_falls_back(self, client, snapshot):
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
+        search_settings["searchTypeSettings"]["fuzzySearch"] = True
+        response = client.post(
+            reverse(views.post_editor_search),
+            {
+                "searchSettings": search_settings,
+                "queries": {"key1": {"query": "past in flams", "cardType": "CARD"}},
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"]["key1"] == [
+            Cards.PAST_IN_FLAMES_1.value.identifier,
+            Cards.PAST_IN_FLAMES_2.value.identifier,
+        ]
+
+    def test_search_with_extra_words_falls_back(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_editor_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "queries": {"key1": {"query": "the past in flames", "cardType": "CARD"}},
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"]["key1"] == [
+            Cards.PAST_IN_FLAMES_1.value.identifier,
+            Cards.PAST_IN_FLAMES_2.value.identifier,
+        ]
+
+    def test_precise_search_with_partial_name_falls_back(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_editor_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "queries": {"key1": {"query": "past in", "cardType": "CARD"}},
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"]["key1"] == [
+            Cards.PAST_IN_FLAMES_1.value.identifier,
+            Cards.PAST_IN_FLAMES_2.value.identifier,
+        ]
+
+    def test_fuzzy_fallback_respects_filters(self, client, snapshot):
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
+        search_settings["filterSettings"]["minimumDPI"] = 700  # excludes every card in the database
+        response = client.post(
+            reverse(views.post_editor_search),
+            {
+                "searchSettings": search_settings,
+                "queries": {"key1": {"query": "brainstrom", "cardType": "CARD"}},
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"]["key1"] == []
+
     def test_minimum_dpi_yielding_no_search_results(self, client, snapshot):
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["minimumDPI"] = 400
@@ -642,6 +720,25 @@ class TestPostExploreSearchResults:
         assert [item["identifier"] for item in response_json["cards"]] == [
             expected_card.identifier for expected_card in expected_cards
         ]
+
+    def test_explore_search_with_typo_falls_back(self, client):
+        response = client.post(
+            reverse(views.post_explore_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "query": "brainstrom",
+                "cardTypes": ["CARD"],
+                "sortBy": "dateCreatedDescending",
+                "pageSize": 20,
+                "pageStart": 0,
+            },
+            content_type="application/json",
+        )
+        # no snapshot here: serialised cards embed factory-sequenced artist names, which depend on test order
+        assert response.status_code == 200
+        response_json = response.json()
+        assert response_json["count"] == 1
+        assert [item["identifier"] for item in response_json["cards"]] == [Cards.BRAINSTORM.value.identifier]
 
     @pytest.mark.parametrize(
         "page_start, page_size, expected_cards",
