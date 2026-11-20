@@ -82,6 +82,13 @@ export function LayoutWithoutReduxProvider({ children }: PropsWithChildren) {
     }
     clientSearchService.initialiseWorker();
     pdfRenderService.initialiseWorker();
+    // restore any persisted client search indexes (issue #418) - best-effort
+    clientSearchService
+      .restorePersistedIndexes(dispatch, forceUpdate)
+      .catch((error) =>
+        console.warn("Failed to restore persisted search indexes:", error)
+      );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

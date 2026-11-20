@@ -97,6 +97,34 @@ export class ClientSearchService {
       .then(() => recalculateSearchResults(state, dispatch, true));
   }
 
+  /**
+   * Rebuild indexes from persisted documents (issue #418). Returns what was
+   * restored so the UI can reflect it; refreshes search state when anything
+   * was.
+   */
+  public async restorePersistedIndexes(
+    dispatch: AppDispatch,
+    forceUpdate: DispatchWithoutAction
+  ): Promise<{
+    localFiles?: { size: number; indexedAt: number };
+    googleDrive?: { size: number; indexedAt: number };
+  }> {
+    if (this.worker === undefined) {
+      throw new Error("clientSearchService was not initialised!");
+    }
+    const restored = await this.worker.restorePersistedIndexes();
+    if (
+      restored.localFiles !== undefined ||
+      restored.googleDrive !== undefined
+    ) {
+      dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
+      dispatch(clearSearchResults());
+      fetchCardDocumentsAndReportError(dispatch, { refreshCardbacks: true });
+      forceUpdate();
+    }
+    return restored;
+  }
+
   public async indexDirectory(
     dispatch: AppDispatch,
     forceUpdate: DispatchWithoutAction,

@@ -28,7 +28,13 @@ import {
 import { parseDjangoDate } from "@/common/utils";
 import { getDefaultSearchSettings } from "@/store/slices/searchSettingsSlice";
 
+import { buildOramaIndex } from "./buildOramaIndex";
 import { Folder, GoogleDriveIndexer, LocalFilesIndexer } from "./indexer";
+import {
+  clearPersistedIndex,
+  loadPersistedIndex,
+  savePersistedIndex,
+} from "./persistence";
 
 export class ClientSearchService {
   private localFilesIndex: LocalFilesIndex | undefined;
@@ -63,10 +69,12 @@ export class ClientSearchService {
 
   public async clearLocalFilesIndex() {
     this.localFilesIndex = undefined;
+    await clearPersistedIndex("localFiles");
   }
 
   public async clearGoogleDriveIndex() {
     this.googleDriveIndex = undefined;
+    await clearPersistedIndex("googleDrive");
   }
 
   public getLocalFilesIndexSize(): number | undefined {
@@ -81,7 +89,7 @@ export class ClientSearchService {
     tags: Array<Tag> | undefined
   ): Promise<{ handle: FileSystemDirectoryHandle; size: number } | undefined> {
     if (this.localFilesIndex?.fileHandle !== undefined) {
-      const oramaIndex = await new LocalFilesIndexer().indexFiles(
+      const { index, documents } = await new LocalFilesIndexer().indexFiles(
         [
           new Folder(
             {
@@ -96,10 +104,15 @@ export class ClientSearchService {
         [],
         tags
       );
-      this.localFilesIndex.index = oramaIndex;
+      this.localFilesIndex.index = index;
+      savePersistedIndex("localFiles", {
+        documents,
+        indexedAt: Date.now(),
+        directoryHandle: this.localFilesIndex.fileHandle,
+      });
       return {
         handle: this.localFilesIndex.fileHandle,
-        size: this.localFilesIndex.index.size,
+        size: index.size,
       };
     }
     return undefined;
@@ -112,7 +125,7 @@ export class ClientSearchService {
     images: Array<GoogleDriveDoc>
   ) {
     const indexer = new GoogleDriveIndexer(bearerToken);
-    const oramaIndex = await indexer.indexFiles(
+    const { index, documents } = await indexer.indexFiles(
       folders.map(
         ({ id, name }) =>
           new Folder(
@@ -134,10 +147,52 @@ export class ClientSearchService {
       ).filter((image) => image !== undefined),
       tags
     );
-    this.googleDriveIndex = { index: oramaIndex };
+    this.googleDriveIndex = { index };
+    savePersistedIndex("googleDrive", { documents, indexedAt: Date.now() });
     return {
-      size: this.googleDriveIndex.index?.size,
+      size: index.size,
     };
+  }
+
+  /**
+   * Rebuild indexes from IndexedDB-persisted documents (issue #418). Search
+   * works immediately after restore; local file *reads* may still need the
+   * user to re-grant permission on the restored directory handle.
+   */
+  public async restorePersistedIndexes(): Promise<{
+    localFiles?: { size: number; indexedAt: number };
+    googleDrive?: { size: number; indexedAt: number };
+  }> {
+    const restored: {
+      localFiles?: { size: number; indexedAt: number };
+      googleDrive?: { size: number; indexedAt: number };
+    } = {};
+    const localFiles = await loadPersistedIndex("localFiles");
+    if (localFiles?.directoryHandle !== undefined) {
+      this.localFilesIndex = {
+        fileHandle: localFiles.directoryHandle,
+        index: buildOramaIndex(
+          localFiles.documents as Array<OramaCardDocument>
+        ),
+      };
+      restored.localFiles = {
+        size: localFiles.documents.length,
+        indexedAt: localFiles.indexedAt,
+      };
+    }
+    const googleDrive = await loadPersistedIndex("googleDrive");
+    if (googleDrive !== undefined) {
+      this.googleDriveIndex = {
+        index: buildOramaIndex(
+          googleDrive.documents as Array<OramaCardDocument>
+        ),
+      };
+      restored.googleDrive = {
+        size: googleDrive.documents.length,
+        indexedAt: googleDrive.indexedAt,
+      };
+    }
+    return restored;
   }
 
   private searchOramaIndex(
